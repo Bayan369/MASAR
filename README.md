@@ -1,132 +1,110 @@
 # MASAR | مسار
 
-Arabic-first employee onboarding knowledge workspace. Phase 1 provides the React/FastAPI foundation. The deadline demo adds real local retrieval over explicitly fictional documents and an opt-in Cloudflare Llama adapter; hosted inference remains unavailable until configured and verified. Authentication, uploads, database-backed records and real company ingestion are not enabled.
+Arabic-first, RTL internal knowledge assistant. React 19 / TypeScript / Vite 6 / Tailwind 4 frontend; Python / FastAPI backend; Supabase Auth, PostgreSQL/pgvector and private Storage; Cloudflare Workers AI Llama and multilingual BGE-M3 embeddings.
 
-## Requirements
-
-- Node.js 22+ (validated with Node 24), npm 11.
-- Python 3.11+ (validated with Python 3.12).
-- [uv](https://docs.astral.sh/uv/) for locked Python installation.
-- Chromium for browser tests. Set `CHROMIUM_PATH` if it is not `/usr/bin/chromium`.
+The production path uses **authenticated company documents**, never the packaged fictional demo corpus. Actual hosted Auth/Storage/inference verification is pending external configuration and approved migration application. See [PRODUCT_PROGRESS.md](PRODUCT_PROGRESS.md) for verified evidence and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for release steps. No hosted migrations or deployment were performed during development.
 
 ## Structure
 
 ```text
-frontend/
-  src/
-    components/       # Shared primitives and question entry
-    lib/              # Arabic navigation/content, API client, preferences
-    pages/            # Dashboard, workspace screens, login
-    App.tsx           # Routes and responsive workspace shell
-    styles.css        # Tailwind import, tokens, responsive component styles
-  e2e/                # Desktop/tablet/mobile Playwright checks
-  .env.example        # Public API URL only
-  package-lock.json   # Locked npm dependency graph
-backend/
-  app/
-    api/routes.py     # Versioned API boundary
-    config.py         # Validated environment settings
-    main.py           # App factory, CORS and safe error responses
-  tests/              # Health, unavailable authentication, CORS, configuration
-  .env.example
-  pyproject.toml
-  uv.lock             # Locked Python dependency graph
+frontend/src/auth/             Supabase session and protected routes
+frontend/src/components/       Shared Arabic RTL components and assistant
+frontend/src/pages/            Employee/admin workflows, login and recovery
+frontend/src/lib/              Typed API, public SDK configuration, resources
+frontend/e2e/                  Offline browser contracts and real anonymous API checks
+frontend/e2e-live/             Explicit opt-in real authenticated AI smoke test
+backend/app/api/              Protected company/document/conversation/chat endpoints
+backend/app/services/         Verified identity, Storage boundary, extraction, RAG and AI
+backend/app/worker.py          Durable document-processing worker
+backend/scripts/              Operator bootstrap and historical demo smoke tool
+backend/tests/                Authorization, processing, evidence and transport tests
+supabase/migrations/          Five ordered local migration files (not applied hosted)
+supabase/tests/               Isolated local PostgreSQL/RLS assertions
+compose.yaml                  API, worker and production static frontend
+deploy/                      Public/server production environment templates
+docs/                        Architecture, database, deployment and validation
 ```
 
-## Install and run
+## Run locally
 
-From the existing checkout; cloud tasks are already isolated, so no additional worktree is needed.
+Requires Node.js 22.13+, Python 3.11+ (tested on 3.12), uv and optionally Docker. Never put secret/server keys in `VITE_` variables. `.env` files are ignored by Git and excluded from Docker contexts.
 
-Frontend, terminal 1:
+```sh
+git switch feat/phase-1-foundation
+git pull --ff-only origin feat/phase-1-foundation
+cp frontend/.env.example frontend/.env
+cp backend/.env.example backend/.env
+cd backend
+uv sync --frozen --extra dev
+uv run uvicorn app.main:app --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+Configure the copied files privately using the variables below. In separate terminals:
+
+```sh
+cd backend
+uv run python -m app.worker
+```
 
 ```sh
 cd frontend
 npm ci
-cp .env.example .env    # optional: defaults work locally
 npm run dev
 ```
 
-Backend, terminal 2:
+Open `http://localhost:5173`. Without external configuration, login fails safely; there is no simulated authentication or demo-mode substitute. Health: `http://127.0.0.1:8000/api/v1/health`. Development API docs: `/docs`. Invite an initial Auth user and use the explicit operator bootstrap described in the deployment guide **after** approved migrations. No default user/company/password is seeded.
+
+## Configuration
+
+| File | Variables |
+| --- | --- |
+| `frontend/.env` | `VITE_API_BASE_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` |
+| `backend/.env` | `MASAR_SUPABASE_URL`, `MASAR_SUPABASE_PUBLISHABLE_KEY`, **server-only** `MASAR_SUPABASE_SERVICE_KEY`, `MASAR_AUTH_REDIRECT_URL` |
+| `backend/.env` | **server-only** `MASAR_CLOUDFLARE_ACCOUNT_ID`, `MASAR_CLOUDFLARE_API_TOKEN`, `MASAR_CLOUDFLARE_MODEL`, `MASAR_CLOUDFLARE_FREE_PLAN_CONFIRMED` |
+| `backend/.env` | `MASAR_ENVIRONMENT`, `MASAR_CORS_ORIGINS` (JSON array), `MASAR_RETRIEVAL_MODE`, `MASAR_AI_CALL_BUDGET`, `MASAR_DEMO_ENABLED=false` |
+
+Use a **publishable** key (`sb_publishable_…`) in public/browser settings; secret or legacy service-role keys are rejected there. Server service key may be a Supabase secret key or legacy service-role JWT. Never reuse it in browser configuration. Only set Free confirmation true after verifying the account is on Workers Free. Default Llama: `@cf/meta/llama-3.1-8b-instruct-fp8-fast`; embedding model: `@cf/baai/bge-m3`, 1024 dimensions. Hybrid retrieval combines vector similarity with lexical relevance; `lexical` is an explicit operator diagnostic option, never an automatic AI failure fallback.
+
+`MASAR_AI_CALL_BUDGET=20` limits chat+embedding requests per process (each worker/API has its own counter); it is **not** an account-wide daily billing meter. Keep Workers Free enabled. Quota/auth/network failures halt that provider process; workers do not automatically restart. Review the safe error code and Free usage before a manual restart. There are no paid fallbacks or automatic inference retries.
+
+## API
+
+All routes below `/api/v1` require a bearer session except `GET /health`.
+
+- Account: `GET /me`, `PATCH /profile` (display name only), `PATCH /company` (admin).
+- Departments: `GET /departments`; admin `POST`, `PATCH /{id}`, `DELETE /{id}`.
+- Members: admin `GET /members`, `POST /members/invite`, `PATCH /members/{id}`. Self role/company/activation changes are denied.
+- Documents: `GET /documents`, `GET /documents/{id}`, `GET /documents/{id}/chunks`, `GET /documents/{id}/download`; admin upload `POST /documents` (multipart), `PATCH /documents/{id}`, `POST /documents/{id}/retry`, `DELETE /documents/{id}`.
+- Assistant: `POST /assistant/ask` with `question`, optional `conversation_id`, UUID `request_id`; response contains answer, exact sources, conversation/request IDs.
+- Conversations: `GET /conversations`, `GET /conversations/{id}/messages`, `PATCH /conversations/{id}`, `DELETE /conversations/{id}`. Always owner-only, including for admins.
+
+Original demo endpoints are disabled by default and unavailable in production. Historical demo scripts require explicitly enabled local demo mode; they are not production validation tools.
+
+## Verify
 
 ```sh
 cd backend
-uv sync --frozen --extra dev
-cp .env.example .env    # optional: defaults work locally
-uv run --frozen uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
-```
-
-The frontend uses port 5173; the backend uses port 8000. Backend interactive API documentation is at `/docs`. For remote browser deployments, set `VITE_API_BASE_URL` to the browser-reachable backend address and add the exact frontend origin to `MASAR_CORS_ORIGINS` (JSON array). Rebuild after changing Vite variables. Never place credentials in `VITE_` variables: they are public build-time settings.
-
-Build: `cd frontend && npm run build`. Deploy `frontend/dist` with SPA fallback to `index.html`. Production hosting, HTTPS, authentication, rate limiting and persistence are separate future work; this phase is not a production deployment.
-
-## API contracts
-
-| Method | Path | Behavior |
-| --- | --- | --- |
-| GET | `/api/v1/health` | 200 with `status: ok`, service name and version; process health only |
-| POST | `/api/v1/auth/login` | Always 501 `AUTH_NOT_CONFIGURED`; no credentials accepted, session or cookie created |
-
-HTTP errors use `{ "error": { "code": "…", "message": "…" } }`. Unexpected failures return a generic Arabic message without exception details. API documentation schemas retain framework terminology.
-
-## Validation
-
-```sh
-cd frontend
-npm run typecheck
+uv run ruff check app tests scripts
+uv run ruff format --check app tests scripts
+uv run pytest -q
+cd ../frontend
 npm run lint
 npm run format:check
 npm test
+npm run typecheck
 npm run build
 npm run test:e2e
-npm audit --omit=dev
 ```
+
+Browser tests need Chromium (`CHROMIUM_PATH` or `/usr/bin/chromium`). They explicitly use synthetic **test-only** authentication/data contracts; anonymous API rejection is tested against actual local FastAPI. They do not establish hosted integration success.
 
 ```sh
-cd backend
-uv run --frozen --extra dev pytest
-uv run --frozen --extra dev ruff check app tests
-uv run --frozen --extra dev ruff format --check app tests
+docker pull pgvector/pgvector@sha256:3e8b3adfd27b5707128f60956f62a793c3c9326ea8cfaf0eab7adccb5d700b21
+python supabase/tests/run_local.py
 ```
 
-Playwright runs the same functional and automated WCAG A/AA checks at desktop (1440px), tablet (900px) and mobile (390px) sizes. Automated checks do not replace a complete manual accessibility review.
+The SQL runner accepts no remote database URL, starts a network-disabled disposable local PostgreSQL container, applies all migrations, verifies permissions/constraints and rolls back every fixture. See [docs/VALIDATION.md](docs/VALIDATION.md) for results and the opt-in live smoke procedure.
 
-Playwright starts its own Vite server when one is not already running. Tests exercise Arabic/RTL navigation, mixed-language question entry, unavailable assistant behavior, department filtering/details, knowledge filters/empty states, local preference persistence, login validation/password visibility, and mobile layout. Login tests stub **only the explicit 501 capability response**, never successful authentication. A separate live backend check can be run with `curl --fail http://127.0.0.1:8000/api/v1/health`.
+## Boundaries
 
-In the managed cloud environment, package downloads, local servers, Chromium and FastAPI TestClient may require the official command-sandbox escalation. Use that mechanism when necessary; do not change the injected proxy settings or disable verification.
-
-## UX and architecture
-
-- Arabic is the only active UI locale: `lang="ar"`, `dir="rtl"`, bilingual technical labels, isolated English terms and direction-aware text entry.
-- Navigation and shared Arabic content live in `src/lib/content.ts`; components separate content from reusable layout and API access. A future locale dictionary and direction selection can be added without rebuilding screens. Full English translation is not implemented.
-- IBM Plex Sans Arabic is bundled locally via Fontsource; no third-party font requests. Icons use Lucide.
-- Shared green/ink/sage palette, responsive sidebar, intentional empty states, visible focus indicators, skip link and reduced-motion support.
-- Department names/responsibilities are **illustrative guidance**, explicitly labelled; not a verified company directory. No invented people, contacts, statistics or conversations.
-- Greeting is neutral until a real profile is available. No fake employee name is used.
-- Suggested questions populate an editable input. Questions are not sent to an AI service or stored as conversations. The dashboard transfers the draft question through a route query; avoid entering sensitive information in this foundation UI.
-- Login checks service availability without transmitting email/password. It never redirects as if login succeeded.
-- Reduced-motion preference is the only persisted setting (browser local storage). It can be cleared through browser site data.
-
-## Next phases
-
-The approved sequence and architecture are recorded in [ROADMAP.md](ROADMAP.md). Phase 1 remains the only implemented phase. Phase 2 uses Supabase PostgreSQL and Auth, with backend authorization and database Row Level Security (RLS); later phases add Supabase Storage, pgvector, and configurable hosted Llama inference. External resource creation and paid-service usage require explicit approval; credentials must be supplied securely. No AI, ingestion or authentication integration is claimed by the current implementation.
-
-## Supabase client foundation
-
-The frontend's `src/lib/supabase.ts` exports `getSupabaseClient()`, a lazy shared client using the official `@supabase/supabase-js` SDK. It is not wired into Phase 1 screens or login and does not send requests on initialization. No hosted integration, database resources or authentication flow is implemented by this configuration-only foundation.
-
-Set these **public browser configuration** variables in `frontend/.env` (see `frontend/.env.example`):
-
-```dotenv
-VITE_SUPABASE_URL=
-VITE_SUPABASE_PUBLISHABLE_KEY=
-```
-
-Supply the project's base HTTPS URL and public **publishable** key from Supabase Dashboard. Keep these empty until configuring a real project; no real values are committed. Restart Vite after local configuration changes; rebuild production assets when changing Vite variables.
-
-Vite exposes `VITE_` values in browser code. Never use `sb_secret_`, service-role keys, database passwords or access tokens here. This module accepts only the `sb_publishable_` format and validates missing/unsafe configuration without including values in errors. `.env` is ignored by Git; do not force-add it. Legacy anon JWT keys are intentionally not supported in this publishable-key setup.
-
-Client initialization is lazy so missing settings do not break existing Phase 1 pages. Session persistence, automatic refresh and URL-session detection are disabled until a separately approved authentication implementation. Unit tests use synthetic public configuration with network requests prohibited; passing them does not establish connectivity to a hosted project. Backend authorization and RLS remain required future work.
-
-## Deadline demo MVP
-
-See [MVP setup, model choice and end-to-end checks](docs/MVP_DEMO.md) and [live progress/status](MVP_PROGRESS.md). The current priority is the question → retrieval → Llama → cited-answer journey using four clearly labelled demo-company documents. Cloudflare credentials stay in ignored backend/.env; the actual Workers Free plan must be confirmed before inference. No paid fallback, hosted Supabase SQL or database deployment is enabled. Database Foundation review files are preserved.
+PDF/DOCX/UTF-8 TXT, 5MiB, 100 PDF pages, 100k extracted characters, at most 80 chunks. Scanned/encrypted/empty documents report failure; OCR is outside the supported product. No HRMS, external document connectors, billing setup, open company signup or SSO provider assumptions. Production readiness still requires configured external services, approved migrations, real document/identity acceptance testing and TLS hosting. [Security and operational limits](docs/DEPLOYMENT.md#operations-and-security).

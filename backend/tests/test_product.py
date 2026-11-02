@@ -461,3 +461,29 @@ def test_direct_source_metadata_rechecks_access_even_outside_list_window():
         assert response.json()["id"] == DOC
         db.rows = lambda *a, **k: []
         assert client.get("/api/v1/documents/" + DOC).status_code == 404
+
+
+def test_text_pdf_extracts_real_page_content_and_citation_page():
+    from pypdf import PdfWriter
+    from pypdf.generic import DictionaryObject, NameObject, DecodedStreamObject
+
+    writer = PdfWriter()
+    page = writer.add_blank_page(300, 200)
+    font = DictionaryObject(
+        {
+            NameObject("/Type"): NameObject("/Font"),
+            NameObject("/Subtype"): NameObject("/Type1"),
+            NameObject("/BaseFont"): NameObject("/Helvetica"),
+        }
+    )
+    page[NameObject("/Resources")] = DictionaryObject(
+        {NameObject("/Font"): DictionaryObject({NameObject("/F1"): writer._add_object(font)})}
+    )
+    content = DecodedStreamObject()
+    content.set_data(b"BT /F1 12 Tf 10 100 Td (VPN PDF fixture only.) Tj ET")
+    page[NameObject("/Contents")] = writer._add_object(content)
+    data = BytesIO()
+    writer.write(data)
+    result = extract_parts(data.getvalue(), "pdf")
+    assert result[0]["content"] == "VPN PDF fixture only."
+    assert result[0]["page_number"] == 1
