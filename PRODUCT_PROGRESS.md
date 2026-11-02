@@ -20,7 +20,7 @@ Scope: complete/test the product locally, prepare deployment, commit/push the fe
 - [x] Validate Compose/TOML; add private/public environment templates, manual CI workflow, deployment/operations/backup/migration/Auth/Free-account/live-acceptance instructions. CI itself not executed on GitHub.
 - [x] Commit and push backend/database milestone — `d4bed63`, feature branch only.
 - [x] Commit and push authenticated UI/source/security milestone — `945b9aa`; local and tracking ref equality verified.
-- [~] Publish tested release packaging/documentation; verify final remote equality and clean working tree.
+- [x] Publish tested release packaging/documentation — `5db9a4afa4506640d8190c5d72168431e246777f`; live GitHub `ls-remote` equals local release HEAD, working tree clean and both private .env paths untracked. Final documentation verification record follows on the same branch.
 - [!] Real Supabase Auth/Storage/RLS gateway and Cloudflare embeddings/inference acceptance: credentials are unset; Cloudflare hostname not in current runtime allowlist; hosted SQL/data writes/deployment prohibited. Owner must complete approved external setup and permit the live acceptance procedure. No live success claimed.
 - [!] Hosted backup/restore drill and production rollout: require selected hosting, approved Supabase/Storage backup configuration and isolated restore destination; not performed against hosted data.
 

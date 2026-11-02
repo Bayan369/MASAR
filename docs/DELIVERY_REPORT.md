@@ -42,7 +42,8 @@ Published implementation milestones:
 
 - [d4bed632ab20f7f9d2996f086df0a720c33b6374](https://github.com/Bayan369/MASAR/commit/d4bed632ab20f7f9d2996f086df0a720c33b6374) — secure backend/database/processing foundation.
 - [945b9aab67cdf33abbf08a102315fd2f680802d3](https://github.com/Bayan369/MASAR/commit/945b9aab67cdf33abbf08a102315fd2f680802d3) — authenticated Arabic workspace and final source/security workflows.
-- Release packaging/delivery-record commits are available on [feat/phase-1-foundation](https://github.com/Bayan369/MASAR/tree/feat/phase-1-foundation); final hashes and remote equality are reported at handoff.
+- [5db9a4afa4506640d8190c5d72168431e246777f](https://github.com/Bayan369/MASAR/commit/5db9a4afa4506640d8190c5d72168431e246777f) — tested release packaging and acceptance runbooks; live remote equality/clean working tree verified before this final record.
+- The final delivery-record commit is available on [feat/phase-1-foundation](https://github.com/Bayan369/MASAR/tree/feat/phase-1-foundation); final hashes and remote equality are reported at handoff.
 
 No merge/main change, force push, secret commit or hosted SQL. Ignored frontend/.env and backend/.env remain outside Git and images.
 
