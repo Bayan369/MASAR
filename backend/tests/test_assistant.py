@@ -35,8 +35,8 @@ class StubLlama:
             return "not json"
         if self.mode == "unsupported":
             return json.dumps({"supported": False, "answer": "", "citations": []})
-        source = next(c for c in context if "21" in c["content"])
-        quote = "يستحق الموظف في الشركة التجريبية 21 يوم عمل من الإجازة السنوية في السنة."
+        source = next(c for c in context if any("21" in e["text"] for e in c["evidence"]))
+        evidence = next(e for e in source["evidence"] if "21" in e["text"])
         return json.dumps(
             {
                 "supported": True,
@@ -46,9 +46,9 @@ class StubLlama:
                 "citations": [
                     {
                         "source_id": "S99" if self.mode == "source" else source["source_id"],
-                        "quote": "اقتباس مخترع لا يوجد في المستند الأصلي."
+                        "evidence_ids": ["S1:E9999"]
                         if self.mode == "quote"
-                        else quote,
+                        else [evidence["evidence_id"]],
                     }
                 ],
             }

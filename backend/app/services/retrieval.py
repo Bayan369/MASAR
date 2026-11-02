@@ -25,7 +25,7 @@ GROUPS = {
     "approval": "approval approvals approve موافقة الموافقة موافقه يوافق اعتماد",
     "hours": "hours working دوام الدوام ساعات العمل",
     "password": "password passwords المرور كلمة كلمات",
-    "setup": "setup install configure تثبيت إعداد اعداد اعدادات إعدادات خطوات",
+    "setup": "setup install configure connect connecting اتصل أتصل اوصل أوصل تثبيت إعداد اعداد اعدادات إعدادات خطوات",
     "request": "request submit أطلب اطلب طلب تقديم يقدم",
     "manager": "manager supervisor المدير مديري مدير",
     "balance": "balance رصيد رصيدي المتبقي",

@@ -31,3 +31,10 @@ Free-only rule: do not enable billing, prepaid AI Gateway or a paid fallback. On
 - [x] Verify response variants, compression, bounded reads, HTTP/API errors, timeout/quota halting and logging redaction — all 61 backend tests passed (including 36 new transport/diagnostic cases); 20 frontend unit tests, all 18 browser tests, build, lint/type/format checks passed.
 - [!] Exact live payload causing the user's failure is not available in this workspace; backend credentials are empty. Do not claim a specific live response mismatch without the new safe diagnostic reason.
 - [x] Verify Database Foundation untouched against all nine baseline SHA-256 hashes; no commit/push/merge, hosted SQL or live inference performed.
+
+## Bilingual VPN evidence fix (uncommitted)
+
+- [x] Reproduce retrieval for the exact English VPN question: all three VPN sections are returned, setup originally ranked third. No evidence that source text was missing; the specific rejected model quote was not retained.
+- [x] Replace generated quote copying with source-bound evidence IDs and exact server-side text extraction from the same prompt bank; invented/cross-source references and generated quote fields are rejected.
+- [x] Verify with 83 passing backend tests (22 new bilingual/evidence cases), 18 passing browser regression tests and Ruff checks. English connect/setup aliases now rank the requested VPN setup section first. No live Llama replay was performed.
+- [x] Recheck all nine Database Foundation file hashes unchanged; no Supabase configuration changes, hosted requests/SQL, commit or push.
