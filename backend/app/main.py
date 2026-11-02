@@ -1,11 +1,14 @@
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.api.routes import router
+from app.api.assistant import router as assistant_router
+from app.services.cloudflare import CloudflareProvider
 from app.config import get_settings
 
 logger = logging.getLogger(__name__)
@@ -21,7 +24,21 @@ def create_app() -> FastAPI:
         allow_methods=["GET", "POST"],
         allow_headers=["Content-Type"],
     )
+    app.state.ai_provider = CloudflareProvider(settings)
     app.include_router(router)
+    app.include_router(assistant_router)
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content={
+                "error": {
+                    "code": "INVALID_REQUEST",
+                    "message": "تحقق من السؤال؛ يجب أن يحتوي على 3 إلى 2000 حرف.",
+                }
+            },
+        )
 
     @app.exception_handler(StarletteHTTPException)
     async def http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:

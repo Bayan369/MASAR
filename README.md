@@ -1,6 +1,6 @@
 # MASAR | مسار
 
-Arabic-first employee onboarding knowledge workspace. Phase 1 provides a polished, responsive React UI and a FastAPI foundation. It does **not** provide AI answers, document ingestion, authentication, or employee records.
+Arabic-first employee onboarding knowledge workspace. Phase 1 provides the React/FastAPI foundation. The deadline demo adds real local retrieval over explicitly fictional documents and an opt-in Cloudflare Llama adapter; hosted inference remains unavailable until configured and verified. Authentication, uploads, database-backed records and real company ingestion are not enabled.
 
 ## Requirements
 
@@ -126,3 +126,7 @@ Supply the project's base HTTPS URL and public **publishable** key from Supabase
 Vite exposes `VITE_` values in browser code. Never use `sb_secret_`, service-role keys, database passwords or access tokens here. This module accepts only the `sb_publishable_` format and validates missing/unsafe configuration without including values in errors. `.env` is ignored by Git; do not force-add it. Legacy anon JWT keys are intentionally not supported in this publishable-key setup.
 
 Client initialization is lazy so missing settings do not break existing Phase 1 pages. Session persistence, automatic refresh and URL-session detection are disabled until a separately approved authentication implementation. Unit tests use synthetic public configuration with network requests prohibited; passing them does not establish connectivity to a hosted project. Backend authorization and RLS remain required future work.
+
+## Deadline demo MVP
+
+See [MVP setup, model choice and end-to-end checks](docs/MVP_DEMO.md) and [live progress/status](MVP_PROGRESS.md). The current priority is the question → retrieval → Llama → cited-answer journey using four clearly labelled demo-company documents. Cloudflare credentials stay in ignored backend/.env; the actual Workers Free plan must be confirmed before inference. No paid fallback, hosted Supabase SQL or database deployment is enabled. Database Foundation review files are preserved.

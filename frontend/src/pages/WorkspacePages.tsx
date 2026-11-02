@@ -1,8 +1,9 @@
 import { apiRequest } from "../lib/api";
 import { readReducedMotion, saveReducedMotion } from "../lib/preferences";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, X, Info, Check, Server } from "lucide-react";
+import { getDemoDocuments, type DemoDocument } from "../lib/assistant";
 import QuestionBox from "../components/QuestionBox";
 import { EmptyState, Icon, PageHeading, Term } from "../components/ui";
 import { departments } from "../lib/content";
@@ -21,8 +22,9 @@ export function Assistant() {
       <div className="notice">
         <Info size={19} />
         <p>
-          المساعد غير مفعّل بعد. لم يتم ربط مستندات الشركة، ولن تُعرض إجابات غير
-          موثقة.
+          تجربة لشركة «مسار التجريبية» بوثائق توضيحية ثابتة، وليست سياسات شركة
+          حقيقية. تُرسل الأسئلة إلى Cloudflare لتوليد الإجابة؛ لا تدخل بيانات
+          شخصية أو سرية.
         </p>
       </div>
       <QuestionBox full />
@@ -130,16 +132,48 @@ export function Departments() {
 export function Knowledge() {
   const [filter, setFilter] = useState("جميع المستندات");
   const [search, setSearch] = useState("");
+  const [documents, setDocuments] = useState<DemoDocument[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [retry, setRetry] = useState(0);
+  const [params, setParams] = useSearchParams();
+  useEffect(() => {
+    const controller = new AbortController();
+    setLoading(true);
+    setError("");
+    getDemoDocuments(controller.signal)
+      .then(setDocuments)
+      .catch((e) => {
+        if (!controller.signal.aborted)
+          setError(e instanceof Error ? e.message : "تعذّر تحميل الوثائق.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
+  }, [retry]);
+  const selected = documents.find((d) => d.id === params.get("document"));
+  const filtered = documents.filter(
+    (d) =>
+      (filter === "جميع المستندات" || d.category === filter) &&
+      (
+        d.title +
+        " " +
+        d.sections.map((s) => s.title + " " + s.content).join(" ")
+      )
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
   return (
     <>
       <PageHeading
-        eyebrow="المعرفة تبدأ من مصدرها"
+        eyebrow="اقرأ المصدر بنفسك"
         title={
           <>
             قاعدة المعرفة <Term>Knowledge Base</Term>
           </>
         }
-        description="المكان المخصص لسياسات الشركة وإجراءاتها وأدلتها المعتمدة."
+        description="أربع وثائق ثابتة لشركة مسار التجريبية. المحتوى للتجربة فقط وليس سياسة صاحب عمل حقيقي."
       />
       <div className="toolbar">
         <label className="search-field">
@@ -153,7 +187,7 @@ export function Knowledge() {
         </label>
       </div>
       <div className="filter-tabs" role="group" aria-label="تصفية نوع المستند">
-        {["جميع المستندات", "السياسات", "الإجراءات", "الأدلة"].map((f) => (
+        {["جميع المستندات", "السياسات", "الأدلة"].map((f) => (
           <button
             key={f}
             aria-pressed={f === filter}
@@ -164,21 +198,68 @@ export function Knowledge() {
           </button>
         ))}
       </div>
-      <section className="surface">
+      {loading && (
+        <p role="status" className="notice">
+          جارٍ تحميل الوثائق التجريبية…
+        </p>
+      )}
+      {error && (
+        <div className="notice" role="alert">
+          <p>{error}</p>
+          <button
+            className="secondary-button"
+            onClick={() => setRetry((r) => r + 1)}
+          >
+            إعادة التحميل
+          </button>
+        </div>
+      )}
+      {!loading && !error && (
+        <div className="demo-document-grid">
+          {filtered.map((d) => (
+            <button
+              className={
+                "demo-document-card " +
+                (selected?.id === d.id ? "selected" : "")
+              }
+              key={d.id}
+              onClick={() => setParams({ document: d.id })}
+            >
+              <Icon name="knowledge" />
+              <span className="pill">وثيقة تجريبية</span>
+              <h2>{d.title}</h2>
+              <p>{d.category}</p>
+              <span className="text-link">قراءة الوثيقة الأصلية ↖</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {!loading && !error && filtered.length === 0 && (
         <EmptyState
           icon="knowledge"
-          title={search ? "لا توجد مستندات مطابقة" : "مصادر شركتك، قريبًا هنا"}
-          description={
-            search
-              ? "لم تُربط أي مستندات بعد، لذلك لا تتوفر نتائج للبحث."
-              : "لم تُضف مستندات الشركة بعد. ستظهر هنا المصادر المعتمدة عند ربط قاعدة المعرفة."
-          }
+          title="لا توجد مستندات مطابقة"
+          description="جرّب كلمة أخرى أو غيّر نوع المستند."
         />
-      </section>
-      <div className="notice">
-        <Info size={18} />
-        <p>ستظهر هنا المستندات المعتمدة بعد إتاحتها من شركتك.</p>
-      </div>
+      )}
+      {selected && (
+        <article className="surface demo-document-reader">
+          <button
+            className="icon-button"
+            aria-label="إغلاق الوثيقة"
+            onClick={() => setParams({})}
+          >
+            <X size={18} />
+          </button>
+          <p className="eyebrow">وثيقة تجريبية — ليست سياسة شركة حقيقية</p>
+          <h2>{selected.title}</h2>
+          {selected.sections.map((s) => (
+            <section key={s.title}>
+              <h3>{s.title}</h3>
+              <p dir="auto">{s.content}</p>
+            </section>
+          ))}
+        </article>
+      )}
     </>
   );
 }
@@ -300,7 +381,7 @@ function BackendStatus() {
       const data = await r.json();
       setState(
         data.status === "ok"
-          ? "الخدمة الخلفية متاحة. المساعد والمصادقة غير مفعّلين."
+          ? "الخدمة الخلفية متاحة. اتصال Llama يحتاج إعداد Cloudflare؛ المصادقة غير مفعّلة."
           : "استجابة غير متوقعة من الخدمة.",
       );
     } catch {

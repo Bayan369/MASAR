@@ -153,7 +153,7 @@ export default function Dashboard() {
           </SectionHeading>
           <EmptyState
             title="كل رحلة تبدأ بسؤال"
-            description="لا توجد محادثات محفوظة بعد. عند تفعيل المساعد، ستجد أسئلتك ومراجعها هنا."
+            description="حفظ المحادثات غير متاح في هذه التجربة. يمكنك طرح سؤال والاطلاع على مصادر إجابته دون إنشاء سجل دائم."
           >
             <Link className="text-link" to="/assistant">
               انتقل إلى المساعد الذكي
@@ -165,8 +165,8 @@ export default function Dashboard() {
       <div className="foundation-note">
         <span className="status-dot" />
         <p>
-          أنت تستكشف النسخة التأسيسية من مسار. سيتم تفعيل المساعد ومصادر الشركة
-          في مرحلة لاحقة.
+          نسخة تجريبية: إجابات من وثائق شركة مسار التجريبية فقط، وليست سياسات
+          شركة حقيقية.
         </p>
       </div>
     </div>

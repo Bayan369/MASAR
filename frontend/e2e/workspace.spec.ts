@@ -4,6 +4,18 @@ test("RTL dashboard, real navigation, empty states and mixed-language question",
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  await page.route("**/api/v1/assistant/ask", async (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({
+        error: {
+          code: "AI_NOT_CONFIGURED",
+          message: "خدمة Llama غير مهيّأة بعد.",
+        },
+      }),
+    }),
+  );
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("مسارك");
@@ -17,7 +29,7 @@ test("RTL dashboard, real navigation, empty states and mixed-language question",
   await page.getByRole("button", { name: "اسأل مسار" }).click();
   await expect(page).toHaveURL(/assistant/);
   await page.getByRole("button", { name: "إرسال السؤال" }).click();
-  await expect(page.getByRole("status")).toContainText("المساعد غير متصل");
+  await expect(page.getByRole("alert")).toContainText("خدمة Llama غير مهيّأة");
   await page.goto("/departments");
   await page.getByLabel("البحث في الأقسام").fill("IT");
   await expect(page.locator(".department-card")).toHaveCount(1);
@@ -30,7 +42,7 @@ test("RTL dashboard, real navigation, empty states and mixed-language question",
   await expect(
     page.getByRole("button", { name: "السياسات", exact: true }),
   ).toHaveAttribute("aria-pressed", "true");
-  await expect(page.getByText("مصادر شركتك، قريبًا هنا")).toBeVisible();
+  await expect(page.locator(".demo-document-card")).toHaveCount(2);
   await page.goto("/settings");
   await page.getByLabel("تقليل الحركة").check();
   await page.getByRole("button", { name: "حفظ التفضيلات" }).click();
@@ -116,4 +128,51 @@ test("Arabic screens meet automated accessibility checks", async ({ page }) => {
       `${route}: ${JSON.stringify(result.violations.map((v) => ({ id: v.id, nodes: v.nodes.map((n) => n.target) })))}`,
     ).toEqual([]);
   }
+});
+
+// Browser contract test only: the response is explicitly stubbed, not live Llama evidence.
+test("assistant displays an answer, evidence and original source", async ({
+  page,
+}) => {
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/v1/assistant/ask", async (route) => {
+    await gate;
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "answered",
+        answer: "إجابة اختبار واجهة فقط.",
+        demo: true,
+        generated_by: "Cloudflare Workers AI / Llama",
+        model: "test-only-model",
+        sources: [
+          {
+            id: "S1",
+            document_id: "leave-policy",
+            title: "سياسة الإجازات (Leave Policy)",
+            section: "الإجازة السنوية",
+            quote: "اقتباس اختبار للواجهة فقط.",
+            excerpt: "مقطع اختبار للواجهة فقط.",
+          },
+        ],
+      }),
+    });
+  });
+  await page.goto("/assistant");
+  await page.getByLabel("سؤالك للمساعد الذكي").fill("كيف أطلب إجازة؟");
+  await page.getByRole("button", { name: "إرسال السؤال" }).click();
+  await expect(
+    page.getByRole("button", { name: "جارٍ البحث وصياغة الإجابة…" }),
+  ).toBeDisabled();
+  release();
+  await expect(page.getByLabel("إجابة مسار")).toContainText(
+    "إجابة اختبار واجهة فقط.",
+  );
+  await expect(page.locator(".answer-sources")).toContainText("اقتباس اختبار");
+  await page.locator(".answer-sources a").click();
+  await expect(page.locator(".demo-document-reader")).toContainText("21");
 });

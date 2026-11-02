@@ -36,3 +36,7 @@ Conduct the full UI/UX and product review after these phases. Continue routine u
 ## Next external prerequisite
 
 After the Phase 1 gate succeeds, confirm whether an existing Supabase development project should be used or a new project should be created. New project creation requires explicit approval and selection of organization, region and billing plan. An existing project requires secure configuration and authorization before migrations or Auth/Storage changes are applied. Do not provide secret values in chat.
+
+## Deadline priority override (approved)
+
+The four-hour demo prioritizes four labelled fictional documents, local BM25 retrieval and the existing UI connected through FastAPI to Cloudflare Workers AI Llama. See MVP_PROGRESS.md. This is a narrow demo path, not completion of Phases 2–7. Preserve the Database Foundation draft; defer uploads, hosted migrations, Auth and persistence. An MVP-only commit and push to the feature branch are now authorized. Database Foundation stays separate and unapplied; merges and hosted SQL remain prohibited.

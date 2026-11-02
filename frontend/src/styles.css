@@ -1618,3 +1618,140 @@ html[data-reduce-motion="true"] *::after {
   animation: none !important;
   transition: none !important;
 }
+
+/* Deadline MVP: extend the existing identity; no redesign of the workspace. */
+.assistant-answer {
+  margin-top: 22px;
+  padding: 22px;
+  background: #fbfcf8;
+  color: #203e34;
+  border: 1px solid #dce5d1;
+  border-radius: 12px;
+}
+.answer-label {
+  font-size: 12px;
+  color: #60705d;
+  margin-bottom: 12px;
+}
+.answer-text {
+  font-size: 15px;
+  line-height: 2;
+  white-space: pre-wrap;
+}
+.answer-sources {
+  border-top: 1px solid #dce5d1;
+  margin-top: 20px;
+  padding-top: 16px;
+}
+.answer-sources h3 {
+  font-size: 13px;
+}
+.answer-sources article {
+  margin-top: 14px;
+  padding: 14px;
+  background: #f0f4e9;
+  border-radius: 9px;
+}
+.answer-sources a {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #174d3e;
+  font-size: 12px;
+  font-weight: 600;
+}
+.answer-sources small {
+  display: block;
+  color: #60705d;
+  font-size: 11px;
+  margin-top: 5px;
+}
+.answer-sources blockquote {
+  margin: 10px 0;
+  font-size: 12px;
+  line-height: 1.9;
+  border-inline-start: 3px solid #93ad76;
+  padding-inline-start: 12px;
+}
+.answer-sources details {
+  font-size: 11px;
+  color: #526747;
+}
+.answer-sources summary {
+  cursor: pointer;
+  padding-block: 5px;
+}
+.answer-sources details p {
+  margin-top: 8px;
+  white-space: pre-wrap;
+}
+.answer-provider {
+  display: block;
+  margin-top: 15px;
+  font-size: 10px;
+  color: #60705d;
+}
+.demo-document-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.demo-document-card {
+  text-align: start;
+  border: 1px solid #dde5d5;
+  background: white;
+  border-radius: 14px;
+  padding: 22px;
+  color: #254633;
+}
+.demo-document-card:hover,
+.demo-document-card.selected {
+  border-color: #8da772;
+  background: #f4f7ed;
+}
+.demo-document-card .pill {
+  float: left;
+}
+.demo-document-card h2 {
+  font-size: 17px;
+  margin-top: 18px;
+}
+.demo-document-card p {
+  font-size: 12px;
+  color: #60705d;
+  margin: 8px 0 15px;
+}
+.demo-document-reader {
+  margin-top: 24px;
+  padding: 26px;
+}
+.demo-document-reader > .icon-button {
+  float: left;
+}
+.demo-document-reader section {
+  padding-top: 20px;
+  margin-top: 18px;
+  border-top: 1px solid #e0e6d8;
+}
+.demo-document-reader h3 {
+  font-size: 15px;
+}
+.demo-document-reader p {
+  font-size: 13px;
+  white-space: pre-wrap;
+  margin-top: 10px;
+}
+@media (max-width: 700px) {
+  .assistant-answer {
+    padding: 16px;
+  }
+  .answer-text {
+    font-size: 14px;
+  }
+  .demo-document-grid {
+    grid-template-columns: 1fr;
+  }
+  .demo-document-reader {
+    padding: 19px;
+  }
+}
