@@ -65,9 +65,16 @@ def test_grounded_answer_contains_real_source_evidence():
     assert result.generated_by == "Cloudflare Workers AI / Llama"
 
 
-@pytest.mark.parametrize("mode", ["invalid", "unsupported", "source", "quote", "number"])
-def test_invalid_or_unsupported_evidence_never_becomes_an_answer(mode):
-    result = answer_question("How many annual leave days?", StubLlama(mode))
+@pytest.mark.parametrize("mode", ["invalid", "source", "quote", "number"])
+def test_invalid_evidence_is_an_explicit_error_not_a_hidden_fallback(mode):
+    with pytest.raises(AIUnavailable) as error:
+        answer_question("How many annual leave days?", StubLlama(mode))
+    assert error.value.code == "AI_ANSWER_INVALID"
+    assert error.value.status == 502
+
+
+def test_explicit_unsupported_answer_remains_a_real_not_found():
+    result = answer_question("How many annual leave days?", StubLlama("unsupported"))
     assert result.status == "not_found"
     assert result.sources == []
     assert result.generated_by is None

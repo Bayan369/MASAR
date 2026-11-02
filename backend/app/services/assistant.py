@@ -1,11 +1,24 @@
 import json
+import logging
 import re
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, ValidationError
 
-from app.services.cloudflare import CloudflareProvider
+from app.services.cloudflare import AIUnavailable, CloudflareProvider
 from app.services.retrieval import retrieve
+
+logger = logging.getLogger(__name__)
+
+
+def invalid_model_answer(reason: str) -> None:
+    logger.warning("llama_answer_rejected reason=%s", reason)
+    raise AIUnavailable(
+        "AI_ANSWER_INVALID",
+        "تعذّر التحقق من صيغة إجابة Llama أو مصادرها. لم تُعرض إجابة غير موثقة؛ راجع سجل الخادم.",
+        502,
+    )
+
 
 NOT_FOUND = "لا تتوفر معلومة موثقة تجيب عن هذا السؤال في وثائق الشركة التجريبية. يرجى الرجوع إلى الجهة المختصة."
 
@@ -69,23 +82,28 @@ Use at most 2 citations and 120 Arabic words. Do not put source IDs in the answe
 For an unsupported answer: {"supported":false,"answer":"","citations":[]}.
 DOCUMENT CONTEXT:\n""" + json.dumps(context, ensure_ascii=False)
     raw = provider.generate(system, question).strip()
-    if raw.startswith("```json") and raw.endswith("```"):
-        raw = raw[7:-3].strip()
+    fenced = re.fullmatch(r"```(?:json)?\s*\n?(.*?)\s*```", raw, re.DOTALL | re.IGNORECASE)
+    if fenced:
+        raw = fenced.group(1).strip()
     try:
         result = ModelAnswer.model_validate_json(raw)
     except ValidationError:
+        # Never log ValidationError: it contains raw generated text/input values.
+        invalid_model_answer("json_or_answer_schema_invalid")
+    if not result.supported:
+        logger.info("llama_answer_not_found reason=model_explicitly_unsupported")
         return Answer(status="not_found", answer=NOT_FOUND)
-    if not result.supported or not result.answer.strip() or not result.citations:
-        return Answer(status="not_found", answer=NOT_FOUND)
+    if not result.answer.strip() or not result.citations:
+        invalid_model_answer("supported_without_answer_or_citations")
     sources = []
     seen = set()
     for citation in result.citations:
         if citation.source_id not in {c["source_id"] for c in context}:
-            return Answer(status="not_found", answer=NOT_FOUND)
+            invalid_model_answer("unknown_source_id")
         index = int(citation.source_id[1:]) - 1
         passage = hits[index].passage
         if compact(citation.quote) not in compact(passage.text):
-            return Answer(status="not_found", answer=NOT_FOUND)
+            invalid_model_answer("quote_not_in_retrieved_source")
         if citation.source_id not in seen:
             sources.append(
                 Source(
@@ -105,7 +123,7 @@ DOCUMENT CONTEXT:\n""" + json.dumps(context, ensure_ascii=False)
         return set(re.findall(r"\d+(?:[.,:]\d+)*", text.translate(translate)))
 
     if not numbers(result.answer).issubset(numbers(" ".join(s.quote for s in sources))):
-        return Answer(status="not_found", answer=NOT_FOUND)
+        invalid_model_answer("answer_numbers_not_in_evidence")
     return Answer(
         status="answered",
         answer=result.answer.strip(),

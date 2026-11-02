@@ -42,7 +42,7 @@ Create a token through Cloudflare Workers AI → Use REST API → Create a Worke
 
 Allow outbound HTTPS to `api.cloudflare.com` through environment settings. A draft domain addition was saved; saving a draft does not activate/publish it. Verify the active runtime policy before live testing. No broad Internet access is needed. No Workers deployment or account/billing change is performed by this code.
 
-Additional local controls: one inference in flight, at most 20 attempts per backend process, at most 600 output tokens per call, 35-second provider timeout, no automatic retries. Any network, authorization, provider or quota error stops further provider calls in that process. Investigate before an explicit restart; restarting resets the local counter and is not a quota/billing workaround.
+Additional local controls: one inference in flight, at most 20 attempts per backend process, at most 600 output tokens per call, 35-second provider timeout, no automatic retries. Any network, authorization, upstream HTTP/API or quota error stops further provider calls in that process. A malformed HTTP-success response fails explicitly with 502 but no longer permanently blocks later manual requests; there are no automatic retries. Invalid generated JSON/evidence also returns an explicit 502 rather than a false not-found answer. See [safe response diagnostics](CLOUDFLARE_DIAGNOSTICS.md). Investigate before an explicit restart; restarting resets the local counter and is not a quota/billing workaround.
 
 ## Start locally
 

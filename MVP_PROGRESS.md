@@ -23,3 +23,11 @@ Free-only rule: do not enable billing, prepaid AI Gateway or a paid fallback. On
 - [x] Re-run checks: 25 backend tests, 20 frontend unit tests, 18 browser tests, build, lint, type and formatting checks passed. Explicit staging excludes all nine Database Foundation files and its README/ROADMAP hunks.
 - [x] Commit and push MVP-only implementation to origin/feat/phase-1-foundation — 622cb2b5f257dd884bb8bd905fd14032c794499a was pushed and independently matched GitHub. All 32 files were explicitly selected; the nine Database Foundation files and shared documentation hunks were excluded. Main remained f8b9bac.
 - [!] Live Llama acceptance remains blocked by empty backend credentials and inactive Cloudflare allowlist; do not call the project complete.
+
+## Cloudflare response investigation (uncommitted)
+
+- [x] Inspect adapter and confirm generic parsing failures permanently latched all later requests into AI_HALTED; 200 can also be local refusal, not a successful provider call.
+- [x] Add bounded JSON/compression parsing, explicit shape checks and content-free diagnostics; transport-format errors no longer latch the process, while connection/auth/quota/API errors still halt. Invalid generated answers return explicit 502, not a hidden 200 fallback.
+- [x] Verify response variants, compression, bounded reads, HTTP/API errors, timeout/quota halting and logging redaction — all 61 backend tests passed (including 36 new transport/diagnostic cases); 20 frontend unit tests, all 18 browser tests, build, lint/type/format checks passed.
+- [!] Exact live payload causing the user's failure is not available in this workspace; backend credentials are empty. Do not claim a specific live response mismatch without the new safe diagnostic reason.
+- [x] Verify Database Foundation untouched against all nine baseline SHA-256 hashes; no commit/push/merge, hosted SQL or live inference performed.
