@@ -105,3 +105,15 @@ curl -X POST http://127.0.0.1:8000/api/v1/auth/login
 ```
 
 Automated checks establish the tested behaviors only; they are not a production-readiness certification. New implementation changes must receive fresh relevant validation before their entries are marked complete.
+
+## Fresh verification and GitHub delivery gate
+
+Approved architecture for subsequent phases: Supabase PostgreSQL, pgvector, Supabase Storage and Supabase Auth; backend and RLS enforcement for Employee and Company Admin. Configurable hosted Llama inference, Arabic-English embeddings and PDF/DOCX/TXT intake. No external resource creation, paid service usage or credentials are authorized by this gate. Phase 2 must not start before verification and GitHub delivery succeed.
+
+- [x] Rerun frontend type checks, lint, formatting, unit tests and production build — all checks passed; 2 unit tests passed.
+- [x] Rerun all desktop, tablet and mobile browser/accessibility checks — all 12 tests passed in one fresh run.
+- [x] Rerun backend tests, lint and formatting checks — 6 tests passed; Ruff check and format check passed.
+- [x] Confirm live frontend and backend responses — frontend HTTP 200; backend HTTP 200 with status ok.
+- [x] Check production dependency advisories and Git diff hygiene — npm audit reported 0 vulnerabilities; git diff --check passed.
+- [x] Record fresh verification evidence and push the existing Phase 1 implementation commits — initial GitHub push succeeded for feat/phase-1-foundation.
+- [x] Verify the remote implementation commit — GitHub and local HEAD both matched 7b740f43cd381e705c45815f1389243f04b619b3 after the initial push; main remained bb9b9c611d024628e9194702b89cfcf0cc6bbcac. The documentation delivery commit is pushed and checked separately in the phase report.

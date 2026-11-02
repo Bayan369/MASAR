@@ -108,4 +108,4 @@ In the managed cloud environment, package downloads, local servers, Chromium and
 
 ## Next phases
 
-Connect approved identity and employee profile services before personalization or protected routes. Define document ownership and source metadata before ingestion. Add retrieval and AI integration only as a separate approved phase, with grounded Arabic answers, preserved English technical terms and original-source citations. No RAG, embeddings, vector database, Llama, HRMS or ticketing functionality is included here.
+The approved sequence and architecture are recorded in [ROADMAP.md](ROADMAP.md). Phase 1 remains the only implemented phase. Phase 2 uses Supabase PostgreSQL and Auth, with backend authorization and database Row Level Security (RLS); later phases add Supabase Storage, pgvector, and configurable hosted Llama inference. External resource creation and paid-service usage require explicit approval; credentials must be supplied securely. No AI, ingestion or authentication integration is claimed by the current implementation.
