@@ -20,7 +20,7 @@ class Question(BaseModel):
         return value.strip()
 
 
-@router.post("/assistant/ask", response_model=Answer)
+@router.post("/demo/ask", response_model=Answer)
 def ask(body: Question, request: Request) -> Answer:
     try:
         return answer_question(body.question, request.app.state.ai_provider)

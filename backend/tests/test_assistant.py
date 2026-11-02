@@ -87,19 +87,17 @@ def test_no_retrieval_means_no_inference():
 
 
 def test_fastapi_question_and_original_documents():
-    app = create_app()
+    app = create_app(Settings(_env_file=None, demo_enabled=True))
     app.state.ai_provider = StubLlama()
     with TestClient(app) as client:
-        response = client.post(
-            "/api/v1/assistant/ask", json={"question": "How many annual leave days?"}
-        )
+        response = client.post("/api/v1/demo/ask", json={"question": "How many annual leave days?"})
         assert response.status_code == 200
         assert response.json()["sources"][0]["document_id"] == "leave-policy"
         docs = client.get("/api/v1/demo/documents").json()
         assert docs["demo"] is True and len(docs["documents"]) == 4
         assert all(d["demo"] for d in docs["documents"])
-        assert client.post("/api/v1/assistant/ask", json={"question": "   "}).status_code == 422
-        bad = client.post("/api/v1/assistant/ask", json={"question": "private-input" * 200})
+        assert client.post("/api/v1/demo/ask", json={"question": "   "}).status_code == 422
+        bad = client.post("/api/v1/demo/ask", json={"question": "private-input" * 200})
         assert bad.status_code == 422
         assert "private-input" not in bad.text
 
@@ -171,4 +169,4 @@ def test_transport_format_and_local_budget(monkeypatch):
         assert provider.generate("context", "question") == "test-only-response"
     with pytest.raises(AIUnavailable) as error:
         provider.generate("context", "question")
-    assert error.value.code == "DEMO_LIMIT_REACHED" and len(calls) == 20
+    assert error.value.code == "AI_BUDGET_REACHED" and len(calls) == 20

@@ -6,13 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "masar-backend"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["fastapi==0.162.0", "uvicorn[standard]==0.54.0", "pydantic-settings==2.14.0"]
+dependencies = ["fastapi==0.162.0", "uvicorn[standard]==0.54.0", "pydantic-settings==2.14.0", "httpx2==2.16.0", "pypdf>=6.0,<7", "python-multipart>=0.0.20,<1"]
 
 [project.optional-dependencies]
 dev = [
     "pytest==8.3.5",
     "ruff==0.11.8",
-    "httpx2>=2.16.0",
 ]
 
 [tool.setuptools.packages.find]

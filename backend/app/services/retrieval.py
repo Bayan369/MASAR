@@ -65,6 +65,7 @@ class Passage:
     title: str
     section: str
     text: str
+    page_number: int | None = None
 
 
 @dataclass(frozen=True)

@@ -250,12 +250,10 @@ def test_network_error_classification_and_halt(monkeypatch, caplog, failure, rea
 
 
 def test_bad_generated_json_returns_502_not_a_false_no_information_200(caplog):
-    app = create_app()
+    app = create_app(Settings(_env_file=None, demo_enabled=True))
     app.state.ai_provider = StubLlama("invalid")
     with TestClient(app) as client:
-        response = client.post(
-            "/api/v1/assistant/ask", json={"question": "How many annual leave days?"}
-        )
+        response = client.post("/api/v1/demo/ask", json={"question": "How many annual leave days?"})
     assert response.status_code == 502
     assert response.json()["error"]["code"] == "AI_ANSWER_INVALID"
     assert "json_or_answer_schema_invalid" in caplog.text

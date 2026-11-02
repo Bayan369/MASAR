@@ -14,8 +14,8 @@ def test_health():
 
 def test_auth_never_creates_session():
     response = client.post("/api/v1/auth/login")
-    assert response.status_code == 501
-    assert response.json()["error"]["code"] == "AUTH_NOT_CONFIGURED"
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "HTTP_ERROR"
     assert "set-cookie" not in response.headers
 
 

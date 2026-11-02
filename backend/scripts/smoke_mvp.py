@@ -18,7 +18,7 @@ if not args.allow_live_inference:
 
 def ask(question):
     request = Request(
-        "http://127.0.0.1:8000/api/v1/assistant/ask",
+        "http://127.0.0.1:8000/api/v1/demo/ask",
         data=json.dumps({"question": question}).encode(),
         headers={"Content-Type": "application/json"},
         method="POST",

@@ -1,0 +1,8 @@
+# Local CLI configuration only. Does not link or deploy to masar-dev.
+project_id = "masar-local"
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = false

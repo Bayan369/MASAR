@@ -5,6 +5,7 @@ from http.client import IncompleteRead
 from io import BytesIO
 import json
 import logging
+import math
 import re
 import ssl
 from threading import Lock
@@ -140,7 +141,7 @@ def network_kind(error: Exception) -> str:
 
 
 class CloudflareProvider:
-    """No automatic retries/fallback. Free-plan and 20-attempt guard remain.
+    """No automatic retries/fallback. Free-plan and bounded per-process attempt guard remain.
 
     Connection/auth/quota/upstream API errors latch off until explicit restart.
     A successful HTTP response with malformed representation fails that request
@@ -180,6 +181,27 @@ class CloudflareProvider:
         raise AIUnavailable(code, message, status) from None
 
     def generate(self, system: str, question: str) -> str:
+        return self._invoke(
+            {
+                "messages": [
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": question},
+                ],
+                "max_tokens": 600,
+                "temperature": 0.1,
+                "stream": False,
+            },
+            self.settings.cloudflare_model,
+        )
+
+    def embed(self, inputs: list[str]) -> list[list[float]]:
+        if not 1 <= len(inputs) <= 8 or any(
+            not text.strip() or len(text) > 2400 for text in inputs
+        ):
+            raise AIUnavailable("EMBEDDING_INPUT_INVALID", "حجم مقاطع الفهرسة غير صالح.")
+        return self._invoke({"text": inputs}, "@cf/baai/bge-m3", embedding=True)
+
+    def _invoke(self, payload: dict, model: str, embedding: bool = False):
         s = self.settings
         if not s.cloudflare_account_id or not s.cloudflare_api_token.get_secret_value():
             raise AIUnavailable(
@@ -191,10 +213,9 @@ class CloudflareProvider:
                 "FREE_PLAN_NOT_CONFIRMED",
                 "أُوقف الاستدلال حتى تأكيد استخدام خطة Workers Free المجانية.",
             )
-        if (
-            not re.fullmatch(r"[0-9a-fA-F]{32}", s.cloudflare_account_id)
-            or s.cloudflare_model not in SUPPORTED_MODELS
-        ):
+        if not re.fullmatch(
+            r"[0-9a-fA-F]{32}", s.cloudflare_account_id
+        ) or model not in SUPPORTED_MODELS | {"@cf/baai/bge-m3"}:
             raise AIUnavailable(
                 "AI_CONFIGURATION_INVALID",
                 "إعدادات الحساب أو نموذج Llama غير صالحة. راجع إعدادات الخدمة الخلفية.",
@@ -210,10 +231,10 @@ class CloudflareProvider:
                     "AI_HALTED",
                     "أُوقفت طلبات Llama بعد خطأ اتصال أو وصول أو حد استخدام. راجع سبب workers_ai_failure في سجل الخادم قبل إعادة التشغيل.",
                 )
-            if self._calls >= 20:
+            if self._calls >= s.ai_call_budget:
                 self.fail(
-                    "DEMO_LIMIT_REACHED",
-                    "وصلت التجربة إلى حد الطلبات المحلي. أُوقف الاستدلال لحماية الحصة المجانية.",
+                    "AI_BUDGET_REACHED",
+                    "وصلت الخدمة إلى حد الطلبات المحلي. أُوقف الاستدلال لحماية الحصة المجانية.",
                     reason="local_attempt_limit",
                     halt=True,
                 )
@@ -222,18 +243,8 @@ class CloudflareProvider:
                 "https://api.cloudflare.com/client/v4/accounts/"
                 + s.cloudflare_account_id
                 + "/ai/run/"
-                + s.cloudflare_model,
-                data=json.dumps(
-                    {
-                        "messages": [
-                            {"role": "system", "content": system},
-                            {"role": "user", "content": question},
-                        ],
-                        "max_tokens": 600,
-                        "temperature": 0.1,
-                        "stream": False,
-                    }
-                ).encode(),
+                + model,
+                data=json.dumps(payload).encode(),
                 headers={
                     "Authorization": "Bearer " + s.cloudflare_api_token.get_secret_value(),
                     "Content-Type": "application/json",
@@ -258,6 +269,26 @@ class CloudflareProvider:
                         http_status=http_status,
                         codes=api_error_codes(data),
                     )
+                if embedding:
+                    result = data.get("result", data) if isinstance(data, dict) else None
+                    vectors = result.get("data") if isinstance(result, dict) else None
+                    if (
+                        not isinstance(vectors, list)
+                        or len(vectors) != len(payload["text"])
+                        or any(
+                            not isinstance(v, list)
+                            or len(v) != 1024
+                            or any(
+                                isinstance(n, bool)
+                                or not isinstance(n, (float, int))
+                                or not math.isfinite(n)
+                                for n in v
+                            )
+                            for v in vectors
+                        )
+                    ):
+                        raise ResponseFormatError("embedding_shape_invalid")
+                    return vectors
                 text, shape = extract_model_response(data)
                 logger.info(
                     "workers_ai_success http_status=%s shape=%s chars=%s elapsed_ms=%s",

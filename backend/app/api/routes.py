@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api/v1")
@@ -14,12 +14,3 @@ class HealthResponse(BaseModel):
 def health() -> HealthResponse:
     """Process health only; no AI, authentication, or database is connected."""
     return HealthResponse()
-
-
-@router.post("/auth/login", tags=["المصادقة"], status_code=501)
-def login_unavailable() -> None:
-    """Capability boundary; deliberately accepts no credentials and creates no session."""
-    raise HTTPException(
-        status_code=501,
-        detail={"code": "AUTH_NOT_CONFIGURED", "message": "تسجيل الدخول غير مفعّل بعد."},
-    )
