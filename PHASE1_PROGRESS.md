@@ -117,3 +117,13 @@ Approved architecture for subsequent phases: Supabase PostgreSQL, pgvector, Supa
 - [x] Check production dependency advisories and Git diff hygiene — npm audit reported 0 vulnerabilities; git diff --check passed.
 - [x] Record fresh verification evidence and push the existing Phase 1 implementation commits — initial GitHub push succeeded for feat/phase-1-foundation.
 - [x] Verify the remote implementation commit — GitHub and local HEAD both matched 7b740f43cd381e705c45815f1389243f04b619b3 after the initial push; main remained bb9b9c611d024628e9194702b89cfcf0cc6bbcac. The documentation delivery commit is pushed and checked separately in the phase report.
+
+## Supabase client foundation (current feature branch)
+
+Connection configuration only; no hosted requests, resources, authentication flow, commit or push.
+
+- [x] Install the official frontend SDK and update the lockfile — npm installation succeeded.
+- [x] Add a lazy client using VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY, with safe validation and no privileged frontend keys — 13 client configuration tests passed, with fetch prohibited.
+- [x] Add empty ignored .env placeholders, public example and configuration documentation — no real credentials inserted; git ignore verified.
+- [x] Verify configuration tests, frontend quality checks and production build — 15 unit tests total, all 12 desktop/mobile/tablet browser and accessibility tests, TypeScript, ESLint, Prettier and Vite build passed. Phase 1 UI/backend files unchanged.
+- [x] Confirm frontend/.env is ignored and untracked and contains only two empty placeholders; no Supabase network requests, resources, commit or push. Hosted connectivity is intentionally untested.

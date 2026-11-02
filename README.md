@@ -109,3 +109,20 @@ In the managed cloud environment, package downloads, local servers, Chromium and
 ## Next phases
 
 The approved sequence and architecture are recorded in [ROADMAP.md](ROADMAP.md). Phase 1 remains the only implemented phase. Phase 2 uses Supabase PostgreSQL and Auth, with backend authorization and database Row Level Security (RLS); later phases add Supabase Storage, pgvector, and configurable hosted Llama inference. External resource creation and paid-service usage require explicit approval; credentials must be supplied securely. No AI, ingestion or authentication integration is claimed by the current implementation.
+
+## Supabase client foundation
+
+The frontend's `src/lib/supabase.ts` exports `getSupabaseClient()`, a lazy shared client using the official `@supabase/supabase-js` SDK. It is not wired into Phase 1 screens or login and does not send requests on initialization. No hosted integration, database resources or authentication flow is implemented by this configuration-only foundation.
+
+Set these **public browser configuration** variables in `frontend/.env` (see `frontend/.env.example`):
+
+```dotenv
+VITE_SUPABASE_URL=
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
+
+Supply the project's base HTTPS URL and public **publishable** key from Supabase Dashboard. Keep these empty until configuring a real project; no real values are committed. Restart Vite after local configuration changes; rebuild production assets when changing Vite variables.
+
+Vite exposes `VITE_` values in browser code. Never use `sb_secret_`, service-role keys, database passwords or access tokens here. This module accepts only the `sb_publishable_` format and validates missing/unsafe configuration without including values in errors. `.env` is ignored by Git; do not force-add it. Legacy anon JWT keys are intentionally not supported in this publishable-key setup.
+
+Client initialization is lazy so missing settings do not break existing Phase 1 pages. Session persistence, automatic refresh and URL-session detection are disabled until a separately approved authentication implementation. Unit tests use synthetic public configuration with network requests prohibited; passing them does not establish connectivity to a hosted project. Backend authorization and RLS remain required future work.
