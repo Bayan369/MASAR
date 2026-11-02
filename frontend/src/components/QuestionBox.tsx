@@ -7,6 +7,8 @@ import { askAssistant, type AssistantAnswer } from "../lib/assistant";
 export default function QuestionBox({ full = false }: { full?: boolean }) {
   const navigate = useNavigate();
   const [params] = useSearchParams();
+  const conversationId = useRef(params.get("conversation") || undefined);
+  const retry = useRef<{ question: string; id: string } | null>(null);
   const [question, setQuestion] = useState(params.get("q") || "");
   const [message, setMessage] = useState("");
   const [answer, setAnswer] = useState<AssistantAnswer | null>(null);
@@ -29,9 +31,19 @@ export default function QuestionBox({ full = false }: { full?: boolean }) {
     setLoading(true);
     const controller = new AbortController();
     active.current = controller;
-    const timeout = window.setTimeout(() => controller.abort(), 45000);
+    const timeout = window.setTimeout(() => controller.abort(), 180000);
     try {
-      setAnswer(await askAssistant(question.trim(), controller.signal));
+      if (!retry.current || retry.current.question !== question.trim())
+        retry.current = { question: question.trim(), id: crypto.randomUUID() };
+      const result = await askAssistant(
+        question.trim(),
+        controller.signal,
+        conversationId.current,
+        retry.current.id,
+      );
+      conversationId.current = result.conversation_id;
+      retry.current = null;
+      setAnswer(result);
     } catch (error) {
       if (active.current === controller) {
         setMessage(
@@ -112,7 +124,7 @@ export default function QuestionBox({ full = false }: { full?: boolean }) {
       </div>
       <div className="source-note">
         <LockKeyhole size={13} />
-        <span>الإجابات ستستند إلى مستندات شركتك مع الإشارة إلى مصادرها.</span>
+        <span>الإجابات تستند إلى مستندات شركتك مع الإشارة إلى مصادرها.</span>
       </div>
       {loading && (
         <p className="inline-notice" role="status">
@@ -127,7 +139,7 @@ export default function QuestionBox({ full = false }: { full?: boolean }) {
         >
           <div className="answer-label">
             {answer.status === "answered"
-              ? "إجابة من الوثائق التجريبية"
+              ? "إجابة من وثائق شركتك"
               : "المعلومة غير متوفرة"}
           </div>
           <p className="answer-text" dir="auto">
@@ -159,8 +171,8 @@ export default function QuestionBox({ full = false }: { full?: boolean }) {
           )}
           {answer.generated_by && (
             <small className="answer-provider">
-              إجابة مولّدة بواسطة Llama عبر Cloudflare Workers AI — محتوى شركة
-              تجريبية.
+              إجابة مولّدة بواسطة Llama عبر Cloudflare Workers AI. راجع المصادر
+              قبل اتخاذ قرار.
             </small>
           )}
         </section>

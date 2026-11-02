@@ -144,8 +144,8 @@ def main() -> None:
         summaries = [
             line for line in result.splitlines() if line.startswith("TESTS_PASSED=")
         ]
-        if summaries != ["TESTS_PASSED=34"]:
-            raise RuntimeError("Expected exactly 34 product SQL assertions")
+        if summaries != ["TESTS_PASSED=35"]:
+            raise RuntimeError("Expected exactly 35 product SQL assertions")
         print(summaries[0], flush=True)
         remaining = execute(
             "select sum(n) from ("

@@ -21,7 +21,7 @@ select public.claim_document();
 select masar_test.ok((select status='processing' and processing_token is not null from public.documents where id='e0000000-0000-0000-0000-000000000001'),'durable worker lease claimed');
 select masar_test.ok((select count(*)=0 from public.claim_document()),'active job cannot be double claimed');
 select masar_test.throws($q$select public.finish_document('e0000000-0000-0000-0000-000000000001','f0000000-0000-0000-0000-000000000001','[]')$q$,'42501','wrong lease cannot publish');
-select public.finish_document('e0000000-0000-0000-0000-000000000001',(select processing_token from public.documents where id='e0000000-0000-0000-0000-000000000001'),jsonb_build_array(jsonb_build_object('chunk_index',0,'content','VPN evidence from local test','embedding',jsonb_build_array(1)||to_jsonb(array_fill(0,array[1023])))));
+select public.finish_document('e0000000-0000-0000-0000-000000000001',(select processing_token from public.documents where id='e0000000-0000-0000-0000-000000000001'),jsonb_build_array(jsonb_build_object('chunk_index',0,'content','VPN evidence from local test. استخدم الشبكة الافتراضية VPN.','embedding',jsonb_build_array(1)||to_jsonb(array_fill(0,array[1023])))));
 select masar_test.ok((select status='published' and processing_token is null from public.documents where id='e0000000-0000-0000-0000-000000000001'),'processing publishes atomically');
 select masar_test.throws($q$select public.manage_document('b0000000-0000-0000-0000-000000000001','e0000000-0000-0000-0000-000000000001','archive')$q$,'P0002','other company admin cannot manage document');
 reset role;
@@ -29,6 +29,7 @@ insert into storage.objects(bucket_id,name) select 'company-documents',storage_p
 set local role authenticated;
 select set_config('request.jwt.claim.sub','a0000000-0000-0000-0000-000000000002',true);
 select masar_test.ok((select count(*)=1 from public.search_chunks('VPN')),'employee lexical retrieval sees allowed document');
+select masar_test.ok((select count(*)=1 from public.search_chunks('الشبكة')),'Arabic lexical retrieval preserves Unicode terms');
 select masar_test.ok((select count(*)=1 from public.search_chunks('VPN',('[1,'||array_to_string(array_fill(0,array[1023]),',')||']')::extensions.vector)),'employee vector retrieval sees allowed document');
 select masar_test.ok((select count(*)=3 from storage.objects),'storage RLS permits only published company and department documents');
 select masar_test.throws($q$insert into storage.objects(bucket_id,name) values('company-documents','forged')$q$,'42501','direct storage upload denied');

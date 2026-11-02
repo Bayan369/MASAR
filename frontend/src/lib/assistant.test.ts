@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { askAssistant, getDemoDocuments } from "./assistant";
 afterEach(() => vi.unstubAllGlobals());
 describe("assistant API client (offline contracts)", () => {
-  it("sends only the question to the backend", async () => {
+  it("sends question and idempotency UUID", async () => {
     const mock = vi.fn().mockResolvedValue(
       new Response(
         JSON.stringify({
@@ -23,8 +23,11 @@ describe("assistant API client (offline contracts)", () => {
     );
     expect(result.status).toBe("not_found");
     const options = mock.mock.calls[0][1];
-    expect(JSON.parse(options.body)).toEqual({ question: "سؤال تجريبي" });
-    expect(options.headers).toEqual({ "Content-Type": "application/json" });
+    expect(JSON.parse(options.body)).toEqual({
+      question: "سؤال تجريبي",
+      request_id: expect.any(String),
+    });
+    expect(options.headers.get("Content-Type")).toBe("application/json");
   });
   it("preserves safe backend errors", async () => {
     vi.stubGlobal(

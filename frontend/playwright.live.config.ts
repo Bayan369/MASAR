@@ -7,9 +7,12 @@ export default defineConfig({
   testDir: "./e2e-live",
   retries: 0,
   workers: 1,
-  timeout: 60000,
+  timeout: 210000,
   use: {
     baseURL: "http://127.0.0.1:5173",
+    trace: "off",
+    screenshot: "off",
+    video: "off",
     viewport: { width: 1440, height: 1000 },
     launchOptions: {
       executablePath: process.env.CHROMIUM_PATH || "/usr/bin/chromium",

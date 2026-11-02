@@ -276,7 +276,15 @@ def test_chunking_preserves_exact_text_and_bounds():
 
 
 @pytest.mark.parametrize(
-    "bad", [[[0] * 1023], [[True] * 1024], [[float("nan")] * 1024], [], [[1] * 1024, [2] * 1024]]
+    "bad",
+    [
+        [[0] * 1023],
+        [[0] * 1024],
+        [[True] * 1024],
+        [[float("nan")] * 1024],
+        [],
+        [[1] * 1024, [2] * 1024],
+    ],
 )
 def test_embedding_invalid_dimensions_or_numbers_rejected(monkeypatch, bad):
     monkeypatch.setattr(
@@ -443,3 +451,13 @@ def test_cached_request_cannot_be_reused_for_another_question():
             ).status_code
             == 409
         )
+
+
+def test_direct_source_metadata_rechecks_access_even_outside_list_window():
+    app, db = member_app()
+    with TestClient(app) as client:
+        response = client.get("/api/v1/documents/" + DOC)
+        assert response.status_code == 200
+        assert response.json()["id"] == DOC
+        db.rows = lambda *a, **k: []
+        assert client.get("/api/v1/documents/" + DOC).status_code == 404

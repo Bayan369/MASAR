@@ -14,6 +14,8 @@ export interface AssistantAnswer {
   demo: boolean;
   generated_by: string | null;
   model: string | null;
+  conversation_id?: string;
+  request_id?: string;
 }
 export interface DemoDocument {
   id: string;
@@ -52,11 +54,17 @@ async function requestJson(
 export async function askAssistant(
   question: string,
   signal: AbortSignal,
+  conversationId?: string,
+  requestId: string = crypto.randomUUID(),
 ): Promise<AssistantAnswer> {
   const data = await requestJson("/assistant/ask", signal, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ question }),
+    body: JSON.stringify({
+      question,
+      conversation_id: conversationId,
+      request_id: requestId,
+    }),
   });
   if (
     !["answered", "not_found"].includes(data.status) ||

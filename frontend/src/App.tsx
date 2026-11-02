@@ -1,3 +1,5 @@
+import { AuthProvider, RequireAuth, useAuth } from "./auth/AuthProvider";
+import Recovery from "./pages/Recovery";
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import {
@@ -22,6 +24,7 @@ import {
 } from "./pages/WorkspacePages";
 import Login from "./pages/Login";
 function Workspace() {
+  const auth = useAuth();
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(
     () => window.matchMedia("(max-width: 700px)").matches,
@@ -98,7 +101,7 @@ function Workspace() {
           <X />
         </button>
         <div className="workspace-label">
-          مساحة الموظف<span>المرحلة التأسيسية</span>
+          مساحة الموظف<span>{auth.membership?.company.name}</span>
         </div>
         <nav aria-label="التنقل الرئيسي">
           {ar.navigation.map((n) => (
@@ -138,12 +141,17 @@ function Workspace() {
               <ArrowUpLeft size={15} />
             </Link>
           </div>
-          <Link to="/login" className="account-link">
+          <Link to="/settings" className="account-link">
             <span className="account-icon">
               <Icon name="hr" size={19} />
             </span>
             <span>
-              مساحة عملك بانتظارك<small>تسجيل الدخول إلى مسار</small>
+              {auth.membership?.profile.display_name || "حسابك"}
+              <small>
+                {auth.membership?.profile.role === "company_admin"
+                  ? "مدير الشركة"
+                  : "الموظف الجديد"}
+              </small>
             </span>
             <ChevronLeft size={17} />
           </Link>
@@ -168,13 +176,16 @@ function Workspace() {
           <div className="topbar-end">
             <span className="phase-indicator">
               <i />
-              نسخة تأسيسية
+              مساحة الشركة
             </span>
             <span className="topbar-divider" />
-            <Link to="/login" className="header-login">
-              تسجيل الدخول
+            <button
+              className="header-login icon-button"
+              onClick={() => void auth.logout()}
+            >
+              تسجيل الخروج
               <ArrowUpLeft size={15} />
-            </Link>
+            </button>
           </div>
         </header>
         <main id="main-content" key={location.pathname}>
@@ -208,10 +219,20 @@ export default function App() {
       <a className="skip-link" href="#main-content">
         انتقل إلى المحتوى
       </a>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="*" element={<Workspace />} />
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/reset-password" element={<Recovery />} />
+          <Route
+            path="*"
+            element={
+              <RequireAuth>
+                <Workspace />
+              </RequireAuth>
+            }
+          />
+        </Routes>
+      </AuthProvider>
     </>
   );
 }

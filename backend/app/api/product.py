@@ -173,6 +173,11 @@ def allowed_document(document_id: UUID, member: Identity):
     return rows[0]
 
 
+@router.get("/documents/{document_id}")
+def document_metadata(document_id: UUID, member: Identity = Depends(identity)):
+    return allowed_document(document_id, member)
+
+
 @router.get("/documents/{document_id}/chunks")
 def document_chunks(document_id: UUID, member: Identity = Depends(identity)):
     allowed_document(document_id, member)
@@ -344,14 +349,16 @@ def own_conversation(conversation_id: UUID, member: Identity):
 @router.get("/conversations/{conversation_id}/messages")
 def messages(conversation_id: UUID, member: Identity = Depends(identity)):
     own_conversation(conversation_id, member)
-    return member.db.rows(
+    rows = member.db.rows(
         "messages",
         select="id,role,content,citations,response_status,model,created_at,turn_id",
         conversation_id="eq." + str(conversation_id),
         company_id="eq." + member.company_id,
-        order="created_at,id",
+        order="created_at.desc,role.desc,id.desc",
         limit="500",
     )
+
+    return list(reversed(rows))
 
 
 @router.patch("/conversations/{conversation_id}")

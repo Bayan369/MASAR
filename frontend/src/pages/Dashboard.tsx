@@ -10,8 +10,16 @@ import {
 } from "lucide-react";
 import QuestionBox from "../components/QuestionBox";
 import { EmptyState, Icon, SectionHeading, Term } from "../components/ui";
-import { departments } from "../lib/content";
+import {
+  useResource,
+  type Department,
+  type Conversation,
+} from "../lib/product";
+import { useAuth } from "../auth/AuthProvider";
 export default function Dashboard() {
+  const { membership } = useAuth();
+  const departments = useResource<Department[]>("/departments");
+  const recent = useResource<Conversation[]>("/conversations");
   return (
     <div className="dashboard">
       <section className="welcome">
@@ -21,7 +29,8 @@ export default function Dashboard() {
             بداية جديدة، بخطوات واثقة
           </p>
           <h1>
-            أهلًا بك، في <span>مسارك.</span>
+            أهلًا {membership?.profile.display_name || "بك"}، في{" "}
+            <span>مسارك.</span>
           </h1>
           <p>
             كل ما تحتاج لمعرفته عن شركتك، أقرب إليك.
@@ -93,19 +102,29 @@ export default function Dashboard() {
           </Link>
         </SectionHeading>
         <p className="section-description">اعرف دور كل قسم، ومن أين تبدأ.</p>
+        {departments.loading && <p role="status">جارٍ تحميل الأقسام…</p>}
+        {departments.error && (
+          <p role="alert">
+            {departments.error}
+            <button onClick={departments.reload}>إعادة المحاولة</button>
+          </p>
+        )}
+        {departments.data?.length === 0 && (
+          <p className="notice">لم تُضف أقسام إلى الشركة بعد.</p>
+        )}
         <div className="department-shortcuts">
-          {departments.slice(0, 4).map((d) => (
+          {departments.data?.slice(0, 4).map((d) => (
             <Link
-              key={d.term}
-              to={"/departments?department=" + d.term}
+              key={d.id}
+              to={"/departments?department=" + d.id}
               className="department-shortcut"
             >
-              <span className={"department-icon " + d.icon}>
-                <Icon name={d.icon} size={23} />
+              <span className="department-icon">
+                <BookOpen size={23} />
               </span>
               <div>
                 <h3>{d.name}</h3>
-                <bdi dir="ltr">({d.term})</bdi>
+                <small>{d.description || "قسم الشركة"}</small>
               </div>
               <ArrowUpLeft size={17} />
             </Link>
@@ -151,22 +170,40 @@ export default function Dashboard() {
           <SectionHeading title="محادثاتك الأخيرة">
             <Icon name="history" size={19} />
           </SectionHeading>
-          <EmptyState
-            title="كل رحلة تبدأ بسؤال"
-            description="حفظ المحادثات غير متاح في هذه التجربة. يمكنك طرح سؤال والاطلاع على مصادر إجابته دون إنشاء سجل دائم."
-          >
-            <Link className="text-link" to="/assistant">
-              انتقل إلى المساعد الذكي
-              <ArrowUpLeft size={15} />
+          {recent.loading && <p role="status">جارٍ تحميل المحادثات…</p>}
+          {recent.error && (
+            <p role="alert">
+              {recent.error}
+              <button onClick={recent.reload}>إعادة المحاولة</button>
+            </p>
+          )}
+          {recent.data?.slice(0, 3).map((c) => (
+            <Link
+              className="history-row"
+              key={c.id}
+              to={"/assistant?conversation=" + c.id}
+            >
+              {c.title || "محادثة"}
+              <ArrowUpLeft size={16} />
             </Link>
-          </EmptyState>
+          ))}
+          {recent.data?.length === 0 && (
+            <EmptyState
+              title="كل رحلة تبدأ بسؤال"
+              description="لا توجد محادثات حتى الآن. ابدأ بسؤال وستجد محادثاتك الخاصة هنا."
+            >
+              <Link className="text-link" to="/assistant">
+                انتقل إلى المساعد الذكي
+                <ArrowUpLeft size={15} />
+              </Link>
+            </EmptyState>
+          )}
         </section>
       </div>
       <div className="foundation-note">
         <span className="status-dot" />
         <p>
-          نسخة تجريبية: إجابات من وثائق شركة مسار التجريبية فقط، وليست سياسات
-          شركة حقيقية.
+          معرفة مؤسسية خاصة: تظهر لك الوثائق والمحادثات المسموح بها لحسابك فقط.
         </p>
       </div>
     </div>

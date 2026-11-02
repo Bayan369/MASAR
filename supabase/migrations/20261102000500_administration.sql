@@ -5,6 +5,10 @@ create function public.update_member(actor uuid,member_id uuid,department uuid,a
 language plpgsql set search_path='' as $$
 declare tenant uuid:=private.require_admin(actor);
 begin
+ -- Serialize membership changes per tenant, then recheck after the lock.
+ -- Two admins cannot concurrently deactivate each other and strand a company.
+ perform 1 from public.companies where id=tenant for update;
+ perform private.require_admin(actor);
  if actor=member_id then raise exception 'Self permission change denied' using errcode='42501'; end if;
  update public.profiles p set department_id=department,role=assigned_role,is_active=active
  where p.id=member_id and p.company_id=tenant;

@@ -41,11 +41,11 @@ export function getSupabaseClient(): SupabaseClient {
   }
 
   client = createClient(endpoint.origin, publishableKey, {
-    // Authentication is not enabled as part of this foundation-only change.
+    // Supabase manages refresh/expiry; authorization is always rechecked by the backend.
     auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-      detectSessionInUrl: false,
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
     },
   });
   return client;

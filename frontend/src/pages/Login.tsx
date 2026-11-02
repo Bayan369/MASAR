@@ -1,4 +1,6 @@
-import { apiRequest } from "../lib/api";
+import { getSupabaseClient } from "../lib/supabase";
+import { useAuth } from "../auth/AuthProvider";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -10,6 +12,9 @@ import {
   ShieldCheck,
 } from "lucide-react";
 export default function Login() {
+  const auth = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [show, setShow] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,19 +32,26 @@ export default function Login() {
     if (Object.keys(next).length) return;
     setLoading(true);
     try {
-      const r = await apiRequest("/auth/login", {
-        method: "POST",
-        signal: AbortSignal.timeout(5000),
-      });
-      setNotice(
-        r.status === 501
-          ? "تسجيل الدخول غير مفعّل في هذه المرحلة. لم تُرسل بياناتك، ولم يتم إنشاء جلسة."
-          : "خدمة المصادقة غير متاحة حاليًا. لم يتم تسجيل الدخول.",
+      const { data, error } = await getSupabaseClient().auth.signInWithPassword(
+        { email: email.trim(), password },
+      );
+      if (error || !data.session) {
+        setNotice(
+          "تعذّر تسجيل الدخول. تحقق من البريد وكلمة المرور وتفعيل الحساب.",
+        );
+        return;
+      }
+      const target = location.state?.from;
+      navigate(
+        typeof target === "string" &&
+          target.startsWith("/") &&
+          !target.startsWith("//")
+          ? target
+          : "/",
+        { replace: true },
       );
     } catch {
-      setNotice(
-        "تعذّر الوصول إلى خدمة المصادقة. لم تُرسل بياناتك ولم يتم تسجيل الدخول.",
-      );
+      setNotice("تعذّر تسجيل الدخول. تحقق من إعدادات الخدمة أو الاتصال.");
     } finally {
       setLoading(false);
     }
@@ -110,7 +122,7 @@ export default function Login() {
               </p>
             )}
             <button className="primary-button login-submit" disabled={loading}>
-              {loading ? "جارٍ التحقق من توفر الخدمة…" : "تسجيل الدخول"}
+              {loading ? "جارٍ تسجيل الدخول…" : "تسجيل الدخول"}
               <ArrowUpLeft size={18} />
             </button>
             {notice && (
@@ -119,9 +131,17 @@ export default function Login() {
               </p>
             )}
           </form>
+          {auth.error && (
+            <p className="login-notice" role="alert">
+              {auth.error}
+            </p>
+          )}
+          <Link className="text-link" to="/reset-password">
+            نسيت كلمة المرور؟
+          </Link>
           <p className="login-disclaimer">
             <ShieldCheck size={16} />
-            المصادقة غير مفعّلة في النسخة التأسيسية.
+            حسابك مرتبط بالشركة عبر تسجيل دخول آمن.
           </p>
         </div>
         <span className="muted small">مسار — معرفة مؤسسية، بخطوات أوضح.</span>

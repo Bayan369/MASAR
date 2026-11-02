@@ -12,5 +12,5 @@ class HealthResponse(BaseModel):
 
 @router.get("/health", response_model=HealthResponse, tags=["النظام"])
 def health() -> HealthResponse:
-    """Process health only; no AI, authentication, or database is connected."""
+    """Process liveness only; this check does not contact external dependencies."""
     return HealthResponse()

@@ -1755,3 +1755,125 @@ html[data-reduce-motion="true"] *::after {
     padding: 19px;
   }
 }
+/* Shared authenticated workspace controls. */
+.auth-state {
+  max-width: 48rem;
+  margin: 12vh auto;
+  padding: 2rem;
+  line-height: 2;
+  text-align: center;
+}
+.product-form {
+  display: grid;
+  gap: 1rem;
+  max-width: 48rem;
+  margin-block: 1.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border, #dce5df);
+  border-radius: 18px;
+  background: #fff;
+}
+.product-form label {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+.product-form input,
+.product-form select,
+.product-form textarea {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid #cad7cf;
+  border-radius: 10px;
+  background: #fff;
+  color: #193e33;
+  font: inherit;
+  min-width: 0;
+}
+.product-form textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+.product-form button {
+  justify-self: start;
+}
+.action-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+.history-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.2rem;
+  border-block-end: 1px solid #e3eae5;
+  color: #224d3e;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.thread {
+  display: grid;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+.thread article {
+  border: 1px solid #dce5df;
+  border-radius: 16px;
+  padding: 1.5rem;
+  background: #fff;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.thread article[data-role="user"] {
+  background: #edf3ef;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: start;
+}
+th,
+td {
+  padding: 1rem;
+  border-block-end: 1px solid #dce5df;
+  text-align: start;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+@media (max-width: 640px) {
+  .product-form {
+    padding: 1rem;
+  }
+  .action-row > * {
+    max-width: 100%;
+  }
+  .history-row {
+    flex-wrap: wrap;
+  }
+  .auth-state {
+    margin: 4vh auto;
+    padding: 1rem;
+  }
+}
+
+.product-form label.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+}
+.product-form input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  accent-color: var(--green);
+}

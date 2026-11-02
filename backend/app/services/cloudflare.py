@@ -284,6 +284,7 @@ class CloudflareProvider:
                                 or not math.isfinite(n)
                                 for n in v
                             )
+                            or not any(v)
                             for v in vectors
                         )
                     ):
