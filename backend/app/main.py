@@ -13,6 +13,7 @@ from app.config import get_settings
 from app.api.product import router as product_router
 from app.api.chat import router as chat_router
 from app.security import BodyLimit
+from app.responses import UTF8JSONHeaders
 from app.services.demo_limits import DemoLimits
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,7 @@ def create_app(settings=None) -> FastAPI:
     )
     app.state.settings = settings
     app.add_middleware(BodyLimit)
+    app.add_middleware(UTF8JSONHeaders)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

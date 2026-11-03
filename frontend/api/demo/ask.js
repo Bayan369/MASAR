@@ -3,6 +3,7 @@ import process from "node:process";
 
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
+  response.setHeader("Content-Type", "application/json; charset=utf-8");
   const fail = (status, message) =>
     response.status(status).json({ error: { message } });
   if (request.method !== "POST") {

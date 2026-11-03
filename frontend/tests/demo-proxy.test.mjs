@@ -49,8 +49,8 @@ test("proxy forwards only the question to configured HTTPS origin", async () => 
     return new globalThis.Response(
       JSON.stringify({
         status: "answered",
-        answer: "Synthetic test answer",
-        sources: [],
+        answer: "الإجازة السنوية — إجابة اختبار فقط",
+        sources: [{ title: "سياسة الإجازات", quote: "مقتطف عربي للاختبار" }],
       }),
     );
   };
@@ -68,6 +68,9 @@ test("proxy forwards only the question to configured HTTPS origin", async () => 
   );
   assert.equal(res.code, 200);
   assert.equal(res.headers["Cache-Control"], "no-store");
+  assert.equal(res.headers["Content-Type"], "application/json; charset=utf-8");
+  assert.equal(res.body.answer, "الإجازة السنوية — إجابة اختبار فقط");
+  assert.equal(res.body.sources[0].quote, "مقتطف عربي للاختبار");
 });
 test("upstream failure is sanitized, never substituted", async () => {
   process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
