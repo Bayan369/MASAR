@@ -15,6 +15,7 @@ from app.api.chat import router as chat_router
 from app.security import BodyLimit
 from app.responses import UTF8JSONHeaders
 from app.services.demo_limits import DemoLimits
+from app.services.semantic_search import HybridSearch
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,7 @@ def create_app(settings=None) -> FastAPI:
     app.state.ai_provider = CloudflareProvider(settings)
     app.include_router(router)
     app.state.demo_limits = DemoLimits(settings)
+    app.state.demo_search = HybridSearch()
     if settings.environment != "demo":
         app.include_router(product_router)
         app.include_router(chat_router)

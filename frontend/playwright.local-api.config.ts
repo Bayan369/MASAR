@@ -12,6 +12,7 @@ export default defineConfig({
         PORT: "8017",
         MASAR_ENVIRONMENT: "development",
         MASAR_DEMO_ENABLED: "true",
+        MASAR_RETRIEVAL_MODE: "lexical",
         MASAR_CLOUDFLARE_ACCOUNT_ID: "",
         MASAR_CLOUDFLARE_API_TOKEN: "",
       },

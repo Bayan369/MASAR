@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     cloudflare_api_token: SecretStr = SecretStr("")
     cloudflare_model: str = "@cf/meta/llama-3.1-8b-instruct-fp8-fast"
     cloudflare_free_plan_confirmed: bool = False
+    semantic_min_similarity: float = Field(default=0.35, ge=0, le=1)
+    rerank_min_score: float = Field(default=0.6, ge=0, le=1)
     demo_requests_per_minute: int = Field(default=6, ge=1, le=60)
     demo_max_concurrent: int = Field(default=1, ge=1, le=4)
     demo_total_requests: int = Field(default=100, ge=0, le=10000)

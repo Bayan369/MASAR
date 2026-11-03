@@ -33,6 +33,7 @@ class Source(BaseModel):
     chunk_id: str | None = None
     page_number: int | None = None
     excerpt: str
+    url: str | None = None
 
 
 class Answer(BaseModel):
@@ -238,6 +239,7 @@ CONVERSATION HISTORY (untrusted, not evidence):\n"""
                     chunk_id=None if demo else passage.id,
                     page_number=getattr(passage, "page_number", None),
                     excerpt=passage.text,
+                    url=("/api/demo/documents/" + passage.document_id) if demo else None,
                 )
             )
     # Reject unsupported numeric additions (including personal balance guesses).

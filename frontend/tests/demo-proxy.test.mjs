@@ -3,6 +3,7 @@ import { afterEach, test } from "node:test";
 import assert from "node:assert/strict";
 import process from "node:process";
 import handler from "../api/demo/ask.js";
+import documentHandler from "../api/demo/documents/[id].js";
 
 const originalFetch = globalThis.fetch;
 const originalUrl = process.env.MASAR_DEMO_BACKEND_URL;
@@ -21,6 +22,13 @@ function response() {
     },
     status(code) {
       this.code = code;
+      return this;
+    },
+    send(body) {
+      this.body = body;
+      return this;
+    },
+    end() {
       return this;
     },
     json(body) {
@@ -128,4 +136,36 @@ test("proxy rejects overlong or privileged history without remote requests", asy
     await handler({ method: "POST", body: { question: "إيه", history } }, res);
     assert.equal(res.code, 422);
   }
+});
+
+test("document proxy reads the original UTF-8 source from the fixed Backend", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  globalThis.fetch = async (url, options) => {
+    assert.equal(
+      String(url),
+      "https://backend.example/api/v1/demo/documents/leave-policy",
+    );
+    assert.equal(options.redirect, "error");
+    return new globalThis.Response("# سياسة الإجازات\nنص مصدر للاختبار.");
+  };
+  const res = response();
+  await documentHandler({ method: "GET", query: { id: "leave-policy" } }, res);
+  assert.equal(res.code, 200);
+  assert.equal(res.headers["Content-Type"], "text/plain; charset=utf-8");
+  assert.equal(res.body, "# سياسة الإجازات\nنص مصدر للاختبار.");
+});
+
+test("document proxy rejects traversal and never leaks failed upstream content", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  globalThis.fetch = () => {
+    throw new Error("Must not call network");
+  };
+  const res = response();
+  await documentHandler({ method: "GET", query: { id: "../private" } }, res);
+  assert.equal(res.code, 400);
+  globalThis.fetch = async () =>
+    new globalThis.Response("PRIVATE_UPSTREAM_ERROR", { status: 503 });
+  await documentHandler({ method: "GET", query: { id: "leave-policy" } }, res);
+  assert.equal(res.code, 502);
+  assert.ok(!JSON.stringify(res.body).includes("PRIVATE_UPSTREAM_ERROR"));
 });

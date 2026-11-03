@@ -58,7 +58,7 @@ def test_policy_and_greeting_plus_question_use_backend_leave_document():
 
 
 def test_history_is_bounded_and_is_not_evidence():
-    app = create_app(Settings(_env_file=None, demo_enabled=True))
+    app = create_app(Settings(_env_file=None, demo_enabled=True, retrieval_mode="lexical"))
     app.state.ai_provider = StubLlama()
     with TestClient(app) as client:
         response = client.post("/api/v1/demo/ask", json={"question": "هاي"})

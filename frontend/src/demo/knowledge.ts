@@ -74,6 +74,7 @@ export type Reply = {
     document_id?: string;
     section?: string;
     excerpt?: string;
+    url?: string | null;
   }[];
   context: Context;
 };

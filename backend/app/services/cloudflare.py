@@ -118,7 +118,7 @@ def extract_model_response(data: object) -> tuple[str, str]:
     if not isinstance(result, dict):
         raise ResponseFormatError("result_not_object")
     text = result.get("response")
-    if isinstance(text, dict) and {"supported", "answer", "citations"}.issubset(text):
+    if isinstance(text, dict):
         return json.dumps(text, ensure_ascii=False), shape + "_json_object"
     if not isinstance(text, str):
         raise ResponseFormatError("response_not_text_or_answer_object")

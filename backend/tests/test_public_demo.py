@@ -19,6 +19,7 @@ def demo_settings(**kwargs):
         _env_file=None,
         **{
             "environment": "demo",
+            "retrieval_mode": "lexical",
             "demo_enabled": True,
             "cloudflare_account_id": "a" * 32,
             "cloudflare_api_token": "server-test-only",

@@ -15,7 +15,7 @@ def clean_social_prefix(question):
     return text[match.end() :].strip(" ،,!؟?.") if match else text
 
 
-def answer_demo_question(question, provider, history):
+def answer_demo_question(question, provider, history, search=None, settings=None):
     query = clean_social_prefix(question)
     if not query:
         return Answer(
@@ -37,4 +37,9 @@ def answer_demo_question(question, provider, history):
                 status="conversational", answer="أكيد، أي موضوع أو خطوة تقصد؟", sources=[]
             )
         query = subject
-    return answer_question(question, provider, retrieved_hits=retrieve(query), conversation=history)
+    hits = (
+        search.search(question, history, provider, settings)
+        if search is not None
+        else retrieve(query)
+    )
+    return answer_question(question, provider, retrieved_hits=hits, conversation=history)

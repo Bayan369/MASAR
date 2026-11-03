@@ -1,6 +1,8 @@
 from typing import Literal
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import PlainTextResponse
+from importlib.resources import files
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.services.assistant import Answer
@@ -40,6 +42,10 @@ def ask(body: Question, request: Request) -> Answer:
                 body.question,
                 request.app.state.ai_provider,
                 [turn.model_dump() for turn in body.history],
+                search=request.app.state.demo_search
+                if request.app.state.settings.retrieval_mode == "hybrid"
+                else None,
+                settings=request.app.state.settings,
             )
     except AIUnavailable as error:
         raise HTTPException(
@@ -65,3 +71,12 @@ def demo_documents() -> dict:
         )
         entry["sections"].append({"title": passage.section, "content": passage.text})
     return {"demo": True, "documents": list(documents.values())}
+
+
+@router.get("/demo/documents/{document_id}", response_class=PlainTextResponse)
+def demo_document(document_id: str):
+    if document_id not in {passage.document_id for passage in passages()}:
+        raise HTTPException(status_code=404, detail="Document not found")
+    return PlainTextResponse(
+        files("app").joinpath("demo_documents", document_id + ".md").read_text(encoding="utf-8")
+    )

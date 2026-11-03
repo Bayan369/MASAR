@@ -6,6 +6,8 @@ The production path uses **authenticated company documents**, never the packaged
 
 For the separate anonymous training trial, see [Public Llama Demo](docs/PUBLIC_LLAMA_DEMO.md). This mode requires explicit configuration; mocked tests do not establish live inference or deployment.
 
+See [Semantic RAG](docs/SEMANTIC_RAG.md) for the Demo vector index, query rewriting, hybrid retrieval, reranking and real-only acceptance runner.
+
 ## Structure
 
 ```text

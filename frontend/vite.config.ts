@@ -6,6 +6,12 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
     proxy: {
+      "/api/demo/documents": {
+        target: process.env.MASAR_LOCAL_API_ORIGIN || "http://127.0.0.1:8000",
+        changeOrigin: true,
+        rewrite: (path) =>
+          path.replace("/api/demo/documents", "/api/v1/demo/documents"),
+      },
       "/api/demo/ask": {
         target: process.env.MASAR_LOCAL_API_ORIGIN || "http://127.0.0.1:8000",
         changeOrigin: true,

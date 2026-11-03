@@ -250,7 +250,7 @@ def test_network_error_classification_and_halt(monkeypatch, caplog, failure, rea
 
 
 def test_bad_generated_json_returns_502_not_a_false_no_information_200(caplog):
-    app = create_app(Settings(_env_file=None, demo_enabled=True))
+    app = create_app(Settings(_env_file=None, demo_enabled=True, retrieval_mode="lexical"))
     app.state.ai_provider = StubLlama("invalid")
     with TestClient(app) as client:
         response = client.post("/api/v1/demo/ask", json={"question": "How many annual leave days?"})
@@ -266,3 +266,16 @@ def test_generic_json_markdown_fence_is_valid():
             return "```\n" + super().generate(system, question) + "\n```"
 
     assert answer_question("How many annual leave days?", Fenced()).status == "answered"
+
+
+def test_native_structured_search_output_is_serialized_then_validated_by_its_stage(monkeypatch):
+    from app.services.semantic_search import Rewrite
+
+    monkeypatch.setattr(
+        "app.services.cloudflare.urlopen",
+        lambda *_args, **_kwargs: Reply(
+            {"success": True, "result": {"response": {"query": "employee onboarding"}}}
+        ),
+    )
+    text = provider().generate("Rewrite query as JSON", "test question")
+    assert Rewrite.model_validate_json(text).query == "employee onboarding"

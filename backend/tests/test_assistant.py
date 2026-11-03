@@ -87,7 +87,7 @@ def test_no_retrieval_means_no_inference():
 
 
 def test_fastapi_question_and_original_documents():
-    app = create_app(Settings(_env_file=None, demo_enabled=True))
+    app = create_app(Settings(_env_file=None, demo_enabled=True, retrieval_mode="lexical"))
     app.state.ai_provider = StubLlama()
     with TestClient(app) as client:
         response = client.post("/api/v1/demo/ask", json={"question": "How many annual leave days?"})

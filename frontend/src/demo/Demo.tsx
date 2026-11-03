@@ -410,6 +410,20 @@ export default function Demo() {
                             المصدر: {s.title}
                           </summary>
                           <blockquote>{s.quote}</blockquote>
+                          {s.url &&
+                            /^\/api\/demo\/documents\/[a-z0-9-]+$/.test(
+                              s.url,
+                            ) && (
+                              <a
+                                className="platform-source"
+                                href={s.url}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                افتح المستند الأصلي
+                                <ArrowUpLeft size={14} />
+                              </a>
+                            )}
                           {s.documentId && (
                             <Link
                               className="platform-source"

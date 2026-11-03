@@ -94,6 +94,7 @@ test("greeting, backend policy source and affirmative share the same API convers
             {
               id: "S1:E1",
               document_id: "leave-policy",
+              url: "/api/demo/documents/leave-policy",
               title: "سياسة الإجازات",
               quote,
               section: "الإجازة السنوية",
@@ -122,5 +123,8 @@ test("greeting, backend policy source and affirmative share the same API convers
   }
   await page.getByText("المصدر: سياسة الإجازات").last().click();
   await expect(page.getByText(quote, { exact: true }).last()).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "افتح المستند الأصلي" }).last(),
+  ).toHaveAttribute("href", "/api/demo/documents/leave-policy");
   expect(step).toBe(3);
 });

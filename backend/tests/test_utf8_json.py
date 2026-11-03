@@ -14,7 +14,7 @@ from test_cloudflare_transport import Reply
 
 
 def test_demo_json_bytes_answer_and_sources_remain_utf8():
-    app = create_app(Settings(_env_file=None, demo_enabled=True))
+    app = create_app(Settings(_env_file=None, demo_enabled=True, retrieval_mode="lexical"))
     app.state.ai_provider = StubLlama()
     with TestClient(app) as client:
         response = client.post("/api/v1/demo/ask", json={"question": "ما هي سياسة الإجازات؟"})
