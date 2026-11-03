@@ -19,6 +19,7 @@ import { departments } from "./catalog";
 import { knowledge } from "./knowledge";
 import { EmptySearch, SearchField } from "../design/Primitives";
 import { Icon } from "../components/ui";
+import { Waymark } from "../design/Waymark";
 const clean = (s: string) =>
   s.toLowerCase().replace(/[أإآ]/g, "ا").replace(/[ً-ٟ]/g, "");
 export function Missing() {
@@ -82,11 +83,12 @@ export function Home() {
             </Link>
           </div>
           <div className="platform-hero-signature">
-            <Compass size={21} />
+            <Waymark />
             <span>معرفة ترشدك، في كل خطوة.</span>
           </div>
         </section>
         <section className="platform-start-card">
+          <Waymark className="platform-journey-signature" />
           <div className="platform-section-kicker">
             <RouteIcon size={18} />
             <span>دليلك لليوم الأول</span>
@@ -150,12 +152,15 @@ export function Home() {
             icon: Sparkles,
             action: "اسأل مسار (MASAR AI)",
           },
-        ].map((c) => (
+        ].map((c, index) => (
           <Link
             className="platform-card platform-link-card"
             key={c.path}
             to={`/${c.path}`}
           >
+            <span className="platform-card-index" aria-hidden="true">
+              {String(index + 1).padStart(2, "0")}
+            </span>
             <span className="platform-card-icon">
               <c.icon size={23} />
             </span>

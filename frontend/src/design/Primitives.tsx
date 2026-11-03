@@ -5,16 +5,23 @@ export function PageHeader({
   title,
   eyebrow,
   headingRef,
+  index,
   children,
 }: {
   title: string;
   eyebrow: string;
   headingRef?: Ref<HTMLHeadingElement>;
+  index?: string;
   children?: ReactNode;
 }) {
   return (
     <div className="platform-page-heading">
-      <div>
+      {index && (
+        <span className="platform-page-index" aria-hidden="true">
+          {index}
+        </span>
+      )}
+      <div className="platform-page-title">
         <span className="platform-eyebrow">{eyebrow}</span>
         <h1 ref={headingRef} tabIndex={-1}>
           {title}

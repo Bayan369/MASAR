@@ -454,3 +454,37 @@ test("assistant uses the app canvas without an inner page at wide and short size
     });
   }
 });
+
+test("page motion respects reduced motion and preserves readable content", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.goto("/");
+  const main = page.locator("main");
+  await expect(main).toHaveAttribute("data-motion", "enabled");
+  await expect(page.locator(".platform-hero")).toHaveAttribute(
+    "data-reveal",
+    "visible",
+  );
+  await page.locator(".platform-company").scrollIntoViewIfNeeded();
+  await expect(page.locator(".platform-company")).toHaveAttribute(
+    "data-reveal",
+    "visible",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(main).toHaveAttribute("data-motion", "reduced");
+  expect(
+    await page
+      .locator(".platform-company")
+      .evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe("none");
+  await page.goto("/assistant");
+  await expect(main).toHaveAttribute("data-motion", "reduced");
+  await send(page, "كيف أطلب إجازة؟");
+  const answer = page.locator(".demo-message.assistant").last();
+  await expect(answer).toContainText("حدّد تواريخ");
+  expect(
+    await answer.evaluate((el) => getComputedStyle(el).animationName),
+  ).toBe("none");
+  await assertClean(page);
+});

@@ -36,6 +36,8 @@ import {
 } from "./PlatformPages";
 import { respond, statusLabels, type Context, type Reply } from "./knowledge";
 import { PageHeader } from "../design/Primitives";
+import { Waymark } from "../design/Waymark";
+import { usePageMotion } from "../design/usePageMotion";
 import "./demo.css";
 type Message =
   | { role: "user"; text: string }
@@ -73,6 +75,8 @@ export default function Demo() {
   const messageInput = useRef<HTMLTextAreaElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const main = useRef<HTMLElement>(null);
+  usePageMotion(main, location.pathname);
   const chat = chats.find((c) => c.id === selected)!;
   const previousPath = useRef(location.pathname);
   useEffect(() => {
@@ -246,6 +250,7 @@ export default function Demo() {
           </Link>
         </header>
         <main
+          ref={main}
           id="main-content"
           className={`demo-main ${assistantPage ? "is-assistant" : ""}`}
           data-page={currentPage?.path}
@@ -254,6 +259,14 @@ export default function Demo() {
             title={currentPage?.label || "الصفحة غير موجودة"}
             eyebrow={currentPage?.term || "MASAR"}
             headingRef={heading}
+            index={
+              currentPage
+                ? String(demoNavigation.indexOf(currentPage) + 1).padStart(
+                    2,
+                    "0",
+                  )
+                : undefined
+            }
           >
             {currentPage?.path === "/" ? (
               <Link className="platform-text-link" to="/onboarding">
@@ -315,7 +328,7 @@ export default function Demo() {
                 {!chat.messages.length && (
                   <div className="demo-welcome">
                     <span className="platform-welcome-icon">
-                      <Sparkles size={30} />
+                      <Waymark />
                     </span>
                     <span className="platform-eyebrow">
                       خطوتك التالية تبدأ هنا
@@ -418,6 +431,9 @@ export default function Demo() {
                   رسالتك للمساعد
                 </label>
                 <div>
+                  <span className="platform-composer-symbol" aria-hidden="true">
+                    <Sparkles size={20} />
+                  </span>
                   <textarea
                     ref={messageInput}
                     id="demo-message"

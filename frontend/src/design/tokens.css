@@ -1,18 +1,24 @@
-/* MASAR: warm neutral surfaces, deep pine, and a restrained brass accent. */
+/* MASAR wayfinding: ink, paper and a confident citron route signal. */
 :root {
   --font-sans: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
-  --canvas: #fafbf9;
+  --canvas: #f6f7f2;
   --surface: #ffffff;
-  --surface-muted: #f0f3ef;
-  --ink: #182d29;
+  --surface-muted: #ecefe8;
+  --ink: #142e28;
   --muted: #5c6c65;
-  --brand: #205d4d;
+  --brand: #155847;
   --brand-hover: #174838;
   --soft: #e9f2eb;
-  --accent: #896126;
-  --border: #dfe6df;
-  --nav: #152f2a;
+  --accent: #566d28;
+  --border: #d8dfd4;
+  --nav: #112e26;
   --nav-text: #c8d8d0;
+  --route-signal: #d4ee83;
+  --route-ink: #17362a;
+  --route-paper: #eef3d9;
+  --motion-fast: 160ms;
+  --motion-enter: 280ms;
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --error: #9d3b32;
   --warning: #805818;
   --focus: #4b8266;
@@ -42,7 +48,7 @@
   --text-xl: 22px;
   --text-subtitle: 24px;
   --text-display: 32px;
-  --text-title: clamp(26px, 2.3vw, 34px);
+  --text-title: clamp(30px, 3.3vw, 48px);
   --page-gutter: clamp(20px, 3.5vw, 64px);
   --sidebar-width: 232px;
 }
