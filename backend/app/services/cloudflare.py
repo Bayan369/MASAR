@@ -199,6 +199,7 @@ class CloudflareProvider:
                     {"role": "system", "content": system},
                     {"role": "user", "content": question},
                 ],
+                "response_format": {"type": "json_object"},
                 "max_tokens": 600,
                 "temperature": 0.1,
                 "stream": False,

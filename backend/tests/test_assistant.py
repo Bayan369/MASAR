@@ -160,6 +160,7 @@ def test_transport_format_and_local_budget(monkeypatch):
         assert request.get_header("Authorization") == "Bearer test-only-token"
         body = json.loads(request.data)
         assert body["max_tokens"] == 600 and body["stream"] is False
+        assert body["response_format"] == {"type": "json_object"}
         calls.append(1)
         return Reply()
 
