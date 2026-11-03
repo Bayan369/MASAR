@@ -76,8 +76,8 @@ button:disabled {
   position: fixed;
   inset-block-start: -100px;
   inset-inline-start: 20px;
-  background: var(--brand);
-  color: #fff;
+  background: var(--control);
+  color: var(--control-text);
   border-radius: var(--radius-sm);
   padding: 12px 20px;
   z-index: 100;

@@ -488,3 +488,35 @@ test("page motion respects reduced motion and preserves readable content", async
   ).toBe("none");
   await assertClean(page);
 });
+
+test("gateway branding loads consistently in navigation and favicon", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute(
+    "href",
+    "/masar-gateway.svg",
+  );
+  const asset = await page.request.get("/masar-gateway.svg");
+  expect(asset.status()).toBe(200);
+  expect(asset.headers()["content-type"]).toContain("image/svg+xml");
+  await expect
+    .poll(() =>
+      page
+        .locator(".gateway-mark")
+        .evaluateAll((elements) =>
+          elements.every(
+            (el) =>
+              el instanceof HTMLImageElement &&
+              el.complete &&
+              el.naturalWidth > 0,
+          ),
+        ),
+    )
+    .toBe(true);
+  await expect(page.locator(".brand:visible").first()).toHaveAttribute(
+    "aria-label",
+    "مسار MASAR — الرئيسية",
+  );
+  await assertClean(page);
+});

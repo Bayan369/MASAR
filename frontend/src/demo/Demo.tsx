@@ -8,7 +8,6 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import {
-  Compass,
   Send,
   Plus,
   BookOpen,
@@ -36,7 +35,7 @@ import {
 } from "./PlatformPages";
 import { respond, statusLabels, type Context, type Reply } from "./knowledge";
 import { PageHeader } from "../design/Primitives";
-import { Waymark } from "../design/Waymark";
+import { GatewayMark } from "../design/GatewayMark";
 import { usePageMotion } from "../design/usePageMotion";
 import "./demo.css";
 type Message =
@@ -170,9 +169,10 @@ export default function Demo() {
         role="navigation"
         aria-label="أدوات التنقل"
       >
-        <Link className="brand" to="/">
-          <Compass size={25} />
+        <Link className="brand" to="/" aria-label="مسار MASAR — الرئيسية">
+          <GatewayMark />
           <span>مسار</span>
+          <bdi className="brand-latin">MASAR</bdi>
         </Link>
         <button
           ref={menuButton}
@@ -190,12 +190,15 @@ export default function Demo() {
         className={`demo-sidebar ${menuOpen ? "is-open" : ""}`}
         aria-label="التنقل في منصة مسار"
       >
-        <Link className="brand" to="/">
+        <Link className="brand" to="/" aria-label="مسار MASAR — الرئيسية">
           <span className="platform-brand-symbol">
-            <Compass size={29} strokeWidth={1.5} />
+            <GatewayMark />
           </span>
-          <span>
-            مسار<small>معرفة ترشدك.</small>
+          <span className="brand-copy">
+            <span className="brand-name">
+              مسار <bdi className="brand-latin">MASAR</bdi>
+            </span>
+            <small>معرفة ترشدك.</small>
           </span>
         </Link>
         <div className="platform-workspace-label">
@@ -328,7 +331,7 @@ export default function Demo() {
                 {!chat.messages.length && (
                   <div className="demo-welcome">
                     <span className="platform-welcome-icon">
-                      <Waymark />
+                      <GatewayMark />
                     </span>
                     <span className="platform-eyebrow">
                       خطوتك التالية تبدأ هنا

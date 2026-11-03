@@ -4,7 +4,6 @@ import {
   ArrowUpLeft,
   Building2,
   BookOpen,
-  Compass,
   FileText,
   Sparkles,
   ChevronLeft,
@@ -19,14 +18,14 @@ import { departments } from "./catalog";
 import { knowledge } from "./knowledge";
 import { EmptySearch, SearchField } from "../design/Primitives";
 import { Icon } from "../components/ui";
-import { Waymark } from "../design/Waymark";
+import { GatewayMark } from "../design/GatewayMark";
 const clean = (s: string) =>
   s.toLowerCase().replace(/[أإآ]/g, "ا").replace(/[ً-ٟ]/g, "");
 export function Missing() {
   return (
     <section className="platform-empty">
       <span className="platform-empty-icon">
-        <Compass size={36} />
+        <GatewayMark />
       </span>
       <span className="platform-eyebrow">404</span>
       <h2>هذه الصفحة غير موجودة</h2>
@@ -83,12 +82,12 @@ export function Home() {
             </Link>
           </div>
           <div className="platform-hero-signature">
-            <Waymark />
+            <GatewayMark />
             <span>معرفة ترشدك، في كل خطوة.</span>
           </div>
         </section>
         <section className="platform-start-card">
-          <Waymark className="platform-journey-signature" />
+          <GatewayMark className="platform-journey-signature" />
           <div className="platform-section-kicker">
             <RouteIcon size={18} />
             <span>دليلك لليوم الأول</span>
@@ -475,7 +474,7 @@ export function Procedure({ onboarding = false }: { onboarding?: boolean }) {
         </div>
         <aside className="platform-guide-aside">
           <span className="platform-card-icon">
-            <Compass size={25} />
+            <GatewayMark />
           </span>
           <h3>معك في الخطوة التالية.</h3>
           <p>اسأل عن أي خطوة، ثم تابع الحوار حتى تتضح لك المعلومة.</p>

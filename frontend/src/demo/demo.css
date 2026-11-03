@@ -25,7 +25,7 @@
   text-wrap: balance;
 }
 .demo-shell :is(input, textarea)::placeholder {
-  color: #69786f;
+  color: var(--placeholder);
   opacity: 1;
 }
 .demo-shell button {
@@ -50,9 +50,35 @@
   flex-direction: column;
   padding: 28px var(--space-4) 18px;
   background: var(--nav);
-  color: #fff;
+  color: var(--ink);
+  border-inline-end: 1px solid var(--nav-border);
   scrollbar-width: thin;
-  scrollbar-color: #58786d transparent;
+  scrollbar-color: var(--scrollbar) transparent;
+}
+.gateway-mark {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.platform-brand-symbol .gateway-mark {
+  width: 100%;
+  height: 100%;
+}
+.brand-copy {
+  min-width: 0;
+}
+.brand-name {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.brand-latin {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 1.8px;
+  color: var(--brand);
 }
 .brand {
   display: flex;
@@ -78,9 +104,9 @@
 .platform-brand-symbol {
   display: grid;
   place-items: center;
-  width: 42px;
-  height: 42px;
-  border: 1px solid #718b72;
+  width: 48px;
+  height: 48px;
+  border: 0;
   border-radius: 14px 4px 14px 4px;
   color: var(--route-signal);
 }
@@ -90,7 +116,7 @@
   gap: 10px;
   padding: 14px 10px;
   margin: 0 0 var(--space-6);
-  border-block: 1px solid #ffffff20;
+  border-block: 1px solid var(--nav-border);
   font-size: var(--text-xs);
 }
 .platform-workspace-label small {
@@ -105,12 +131,12 @@
   width: var(--space-8);
   height: var(--space-8);
   border-radius: var(--radius-sm);
-  background: #ffffff0d;
+  background: var(--soft);
 }
 .platform-nav-caption {
   display: block;
   font-size: var(--text-caption);
-  color: #bbcdc4;
+  color: var(--nav-caption);
   margin: 0 var(--space-3) var(--space-3);
 }
 .demo-sidebar nav {
@@ -133,23 +159,23 @@
 .demo-sidebar nav small {
   display: block;
   font-size: var(--text-micro);
-  color: #b6c9c0;
+  color: var(--muted);
   margin-top: var(--space-1);
 }
 .demo-sidebar nav a:hover {
-  color: #fff;
-  background: #ffffff0a;
+  color: var(--ink);
+  background: var(--nav-hover);
 }
 .demo-sidebar nav a[aria-current] {
   color: var(--route-ink);
-  background: var(--route-signal);
+  background: var(--nav-active);
   box-shadow: none;
 }
 .demo-sidebar nav a[aria-current] > svg:first-child {
   color: var(--route-ink);
 }
 .demo-sidebar nav a[aria-current] small {
-  color: #354d38;
+  color: var(--control-text);
 }
 .demo-sidebar nav a:hover {
   transform: translateX(-2px);
@@ -162,7 +188,7 @@
   padding: var(--space-8) var(--space-3) var(--space-5);
 }
 .platform-sidebar-bottom > svg {
-  color: #d4c99d;
+  color: var(--brand);
   width: var(--space-5);
 }
 .platform-sidebar-bottom h2 {
@@ -181,16 +207,16 @@
   gap: var(--space-2);
   align-items: center;
   font-size: var(--text-xs);
-  color: #fff;
+  color: var(--brand);
   margin-top: var(--space-4);
 }
 .platform-sidebar-footer {
   display: flex;
   justify-content: space-between;
   gap: var(--space-2);
-  color: #b6c9c0;
+  color: var(--muted);
   padding: var(--space-4) 10px 0;
-  border-top: 1px solid #ffffff1c;
+  border-top: 1px solid var(--nav-border);
   font-size: var(--text-micro);
 }
 .platform-sidebar-footer > span:first-child {
@@ -245,7 +271,7 @@
   flex-shrink: 0;
   width: clamp(44px, 5vw, 64px);
   aspect-ratio: 1;
-  border: 1px solid #b8c8ae;
+  border: 1px solid var(--brand-border);
   border-radius: 16px 4px 16px 4px;
   font-size: clamp(18px, 2vw, 26px);
   font-weight: 400;
@@ -318,18 +344,18 @@
   padding: 10px 18px;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
-  background: var(--brand);
-  color: #fff;
+  background: var(--control);
+  color: var(--control-text);
   font-size: var(--text-sm);
   font-weight: 500;
   line-height: 1.6;
 }
 .demo-shell .platform-button {
-  color: #fff;
+  color: var(--control-text);
 }
 .platform-button:hover,
 .demo-new:hover {
-  background: var(--brand-hover);
+  background: var(--control-hover);
 }
 .demo-shell .platform-button.secondary,
 .demo-new {
@@ -340,7 +366,7 @@
 .platform-button.secondary:hover,
 .demo-new:hover {
   background: var(--surface-muted);
-  border-color: #a8baae;
+  border-color: var(--brand-border);
 }
 .platform-text-link,
 .platform-back,
@@ -389,7 +415,7 @@
 }
 .platform-search:focus-within {
   border-color: var(--focus);
-  box-shadow: 0 0 0 3px #4b826612;
+  box-shadow: var(--focus-shadow);
 }
 .platform-search input {
   border: 0;
@@ -512,14 +538,14 @@
   margin-inline: calc(-1 * var(--page-gutter));
   padding: 0;
   border: 0;
-  background: var(--nav);
+  background: var(--hero-surface);
 }
 .platform-hero {
   padding: clamp(32px, 4.5vw, 64px) var(--page-gutter);
-  color: #f9fbef;
+  color: var(--hero-text);
 }
 .platform-hero > .platform-eyebrow {
-  color: var(--route-signal);
+  color: var(--brand);
   font-size: 12px;
   font-weight: 500;
 }
@@ -533,7 +559,7 @@
 .platform-hero > p {
   font-size: 15px;
   line-height: 2;
-  color: #d2ded3;
+  color: var(--hero-muted);
   max-width: 510px;
   margin: 24px 0 32px;
 }
@@ -541,11 +567,11 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #d2ded3;
+  color: var(--hero-muted);
   font-size: 11px;
   margin-top: 36px;
 }
-.platform-hero-signature svg {
+.platform-hero-signature .gateway-mark {
   color: var(--route-signal);
   width: 25px;
   height: 25px;
@@ -556,11 +582,11 @@
   border-color: var(--route-signal);
 }
 .platform-hero .platform-button:hover {
-  background: #e3f6ad;
+  background: var(--control-hover);
   transform: translateY(-2px);
 }
 .platform-hero .platform-text-link {
-  color: #f4f7e9;
+  color: var(--brand-hover);
 }
 
 .platform-start-card {
@@ -569,7 +595,8 @@
   overflow: hidden;
   border: 0;
   padding: 40px clamp(24px, 3vw, 44px);
-  background: var(--route-signal);
+  background: var(--hero-aside);
+  border-inline-start: 1px solid var(--border);
   color: var(--route-ink);
   display: flex;
   flex-direction: column;
@@ -581,12 +608,12 @@
   height: 180px;
   inset-inline-end: -24px;
   bottom: -20px;
-  color: #183e2a;
+  color: var(--brand);
   opacity: 0.12;
   z-index: -1;
 }
 .platform-start-card .platform-section-kicker {
-  color: #334f37;
+  color: var(--hero-muted);
 }
 
 .platform-start-card h2 {
@@ -614,14 +641,14 @@
   height: 27px;
   top: 32px;
   inset-inline-start: 15px;
-  background: #91ab69;
+  background: var(--brand-border);
 }
 .platform-start-card li > span {
   display: grid;
   place-items: center;
   width: 32px;
   height: 32px;
-  border: 1px solid #6d874e;
+  border: 1px solid var(--brand-border);
   border-radius: 50%;
   font-size: 12px;
   color: var(--route-ink);
@@ -632,7 +659,7 @@
   color: var(--route-ink);
   font-weight: 500;
   align-self: start;
-  border-bottom: 1px solid #708d4b;
+  border-bottom: 1px solid var(--brand-border);
   padding-bottom: 4px;
 }
 .platform-start-card strong {
@@ -642,7 +669,7 @@
 }
 .platform-start-card small {
   display: block;
-  color: #334f37;
+  color: var(--hero-muted);
   font-size: 12px;
   margin-top: 4px;
 }
@@ -720,7 +747,7 @@
   border: 0;
   border-inline-start: 3px solid var(--brand);
   margin-top: 48px;
-  background: #eaf0dc;
+  background: var(--soft);
 }
 .platform-company h2 {
   font-size: 30px;
@@ -743,7 +770,7 @@
   font-size: 12px;
   color: var(--brand);
   padding-block: 6px;
-  border-bottom: 1px solid #b9caaa;
+  border-bottom: 1px solid var(--brand-border);
 }
 .platform-department-chips a:hover {
   border-color: var(--brand);
@@ -967,7 +994,7 @@
   gap: var(--space-2);
   margin: var(--space-6) 0;
   padding-top: var(--space-5);
-  border-top: 1px solid #d6dfd4;
+  border-top: 1px solid var(--border);
 }
 .platform-contact-address small {
   color: var(--muted);
@@ -1124,7 +1151,7 @@
   height: 44px;
   display: grid;
   place-items: center;
-  border: 1px solid #adc68d;
+  border: 1px solid var(--brand-border);
   border-radius: 50%;
   color: var(--route-ink);
   background: var(--route-signal);
@@ -1512,7 +1539,7 @@
   color: var(--route-ink);
   margin-bottom: 4px;
 }
-.platform-welcome-icon > svg {
+.platform-welcome-icon > .gateway-mark {
   width: 42px;
   height: 42px;
 }
@@ -1547,7 +1574,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 14px;
-  border: 1px solid #cbd8c2;
+  border: 1px solid var(--brand-border);
   border-radius: 8px 3px 8px 3px;
   background: var(--surface);
   text-align: start;
@@ -1601,8 +1628,8 @@
   width: fit-content;
   max-width: min(80%, 820px);
   margin-inline-start: max(0px, calc((100% - 820px) / 2));
-  background: var(--nav);
-  color: #f3f7e9;
+  background: var(--soft);
+  color: var(--ink);
   padding: 14px 18px;
   border-radius: 12px 3px 12px 12px;
 }
@@ -1638,11 +1665,11 @@
   color: var(--warning);
 }
 .demo-status.unavailable {
-  color: #80534b;
+  color: var(--unavailable);
 }
 .demo-message details {
   margin-top: 16px;
-  border-inline-start: 2px solid #b2ca85;
+  border-inline-start: 2px solid var(--brand-border);
   padding-inline-start: 14px;
   font-size: 12px;
   color: var(--muted);
@@ -1737,18 +1764,18 @@
   display: flex;
   align-items: end;
   gap: 14px;
-  border: 1px solid #9bb596;
+  border: 1px solid var(--brand-border);
   border-radius: 12px;
   padding: 10px;
   background: var(--surface);
-  box-shadow: 0 4px 16px #16342808;
+  box-shadow: var(--shadow);
   width: 100%;
   max-width: 960px;
   margin-inline: auto;
 }
 .demo-composer > div:first-of-type:focus-within {
   border-color: var(--brand);
-  box-shadow: 0 0 0 3px #15584712;
+  box-shadow: var(--focus-shadow);
 }
 .platform-composer-symbol {
   display: grid;
@@ -1782,13 +1809,13 @@
   min-width: 38px;
   min-height: 38px;
   padding: 9px 12px;
-  background: var(--nav);
-  color: var(--route-signal);
+  background: var(--control);
+  color: var(--control-text);
   border-radius: 6px;
   font-size: 12px;
 }
 .demo-composer button:hover:not(:disabled) {
-  background: var(--brand-hover);
+  background: var(--control-hover);
 }
 .platform-composer-hint {
   display: flex;
@@ -2016,21 +2043,26 @@ html[data-reduce-motion="true"] .demo-shell :is(a, button, summary),
     height: 60px;
     padding-inline: var(--space-5);
     background: var(--nav);
-    color: #fff;
+    border-bottom: 1px solid var(--nav-border);
+    color: var(--ink);
     position: sticky;
     top: 0;
     z-index: 30;
   }
+  .platform-mobile-bar .brand > .gateway-mark {
+    width: 36px;
+    height: 36px;
+  }
   .platform-mobile-bar .brand {
-    color: #fff;
+    color: var(--ink);
     font-size: 26px;
     gap: 9px;
   }
   .platform-mobile-bar .platform-icon-button {
-    color: #fff;
+    color: var(--ink);
   }
   .platform-mobile-bar .platform-icon-button:hover {
-    background: #ffffff10;
+    background: var(--nav-hover);
   }
   .demo-sidebar {
     display: none;
@@ -2451,7 +2483,7 @@ html[data-reduce-motion="true"] .demo-shell :is(a, button, summary),
     height: 48px;
     border-radius: 14px 3px 14px 3px;
   }
-  .platform-welcome-icon svg {
+  .platform-welcome-icon .gateway-mark {
     width: 32px;
     height: 32px;
   }
@@ -2534,7 +2566,7 @@ html[data-reduce-motion="true"] .demo-shell :is(a, button, summary),
     margin: 0;
     border-radius: var(--radius);
   }
-  .platform-welcome-icon svg {
+  .platform-welcome-icon .gateway-mark {
     width: 22px;
     height: 22px;
   }
