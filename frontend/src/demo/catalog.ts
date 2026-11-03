@@ -116,5 +116,5 @@ export const demoNavigation = [
   },
   { path: "/policies", label: "السياسات والإجراءات", term: "Policies" },
   { path: "/documents", label: "المستندات والملفات", term: "Documents" },
-  { path: "/assistant", label: "مسار الذكي", term: "MASAR AI" },
+  { path: "/assistant", label: "اسأل مسار", term: "MASAR AI" },
 ];

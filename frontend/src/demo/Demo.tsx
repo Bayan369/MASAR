@@ -301,15 +301,6 @@ export default function Demo() {
               </nav>
             </aside>
             <div className="platform-chat-content">
-              <div className="platform-chat-heading">
-                <div className="platform-assistant-icon">
-                  <Sparkles size={20} />
-                </div>
-                <div>
-                  <h2>مسار، معك في كل خطوة.</h2>
-                  <p>اسأل عن الأقسام والإجراءات، وتابع من حيث وصلت.</p>
-                </div>
-              </div>
               <section
                 className="demo-messages"
                 role="log"

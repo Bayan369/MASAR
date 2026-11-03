@@ -193,9 +193,9 @@ export function Home() {
           {
             path: "assistant",
             title: "سؤال يبدأ به حوار",
-            text: "اسأل، استوضح، وتابع من حيث وصلت مع مسار الذكي.",
+            text: "اسأل، استوضح، وتابع من حيث وصلت مع اسأل مسار.",
             icon: Sparkles,
-            action: "مسار الذكي (MASAR AI)",
+            action: "اسأل مسار (MASAR AI)",
           },
         ].map((c) => (
           <Link

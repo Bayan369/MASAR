@@ -53,8 +53,11 @@ test("contextual chat, exact sources, cross-page context and independent history
   const observed = observe(page);
   await page.goto("/assistant");
   const log = page.getByRole("log");
+  expect(await log.evaluate((el) => getComputedStyle(el).overflowY)).toBe(
+    "visible",
+  );
   await expect(
-    page.getByRole("heading", { level: 1, name: "مسار الذكي" }),
+    page.getByRole("heading", { level: 1, name: "اسأل مسار" }),
   ).toBeVisible();
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
   await send(page, "كيف أبدأ أول يوم؟");
@@ -68,7 +71,7 @@ test("contextual chat, exact sources, cross-page context and independent history
     .last()
     .click();
   await expect(page).toHaveURL(/\/departments\/it$/);
-  await navigate(page, "مسار الذكي MASAR AI");
+  await navigate(page, "اسأل مسار MASAR AI");
   await send(page, "وش تقصد؟");
   await expect(
     log.getByText("المقصود بالخطوة السابقة", { exact: false }),
@@ -79,7 +82,7 @@ test("contextual chat, exact sources, cross-page context and independent history
   );
   await log.getByRole("link", { name: "افتح المستند الأصلي" }).last().click();
   await expect(page).toHaveURL(/\/documents\/onboarding$/);
-  await navigate(page, "مسار الذكي MASAR AI");
+  await navigate(page, "اسأل مسار MASAR AI");
   await send(page, "كم راتبي؟");
   await expect(
     log.getByText("معلومة غير متوفرة", { exact: true }),

@@ -2574,3 +2574,87 @@
     font-size: 11px;
   }
 }
+
+/* The conversation is part of the page, with one vertical document scroll. */
+.demo-main.is-assistant {
+  max-width: 1160px;
+  padding-bottom: 0;
+}
+.is-assistant .platform-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  overflow: visible;
+}
+.is-assistant .demo-chat-history {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 0 0 16px;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+.is-assistant .demo-new {
+  width: auto;
+  margin: 0;
+  padding-inline: 16px;
+  flex-shrink: 0;
+}
+.is-assistant .demo-chat-history .platform-nav-caption {
+  display: none;
+}
+.is-assistant .demo-chat-history nav {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+  gap: 6px;
+  overflow: visible;
+  min-width: 0;
+}
+.is-assistant .demo-chat-history nav button {
+  min-width: 0;
+  width: auto;
+  max-width: 220px;
+  max-height: none;
+  align-items: center;
+}
+.is-assistant .platform-chat-content {
+  background: transparent;
+}
+.is-assistant .demo-messages {
+  height: auto;
+  min-height: min(420px, 50dvh);
+  overflow: visible;
+  overscroll-behavior: auto;
+  scrollbar-gutter: auto;
+  padding: 28px 0;
+}
+.is-assistant .demo-welcome {
+  padding: 20px 0;
+}
+.is-assistant .demo-composer {
+  position: static;
+  bottom: 0;
+  z-index: 5;
+  padding: 16px 0 max(16px, env(safe-area-inset-bottom));
+  border: 0;
+  background: var(--canvas);
+}
+@media (max-width: 760px) {
+  .is-assistant .demo-chat-history nav button {
+    max-width: 150px;
+  }
+  .is-assistant .demo-messages {
+    padding-block: 22px;
+    min-height: 0;
+  }
+  .is-assistant .demo-welcome h2 {
+    font-size: 22px;
+  }
+}
