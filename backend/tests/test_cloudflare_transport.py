@@ -256,7 +256,7 @@ def test_bad_generated_json_returns_502_not_a_false_no_information_200(caplog):
         response = client.post("/api/v1/demo/ask", json={"question": "How many annual leave days?"})
     assert response.status_code == 502
     assert response.json()["error"]["code"] == "AI_ANSWER_INVALID"
-    assert "json_or_answer_schema_invalid" in caplog.text
+    assert "json_parse_error" in caplog.text
     assert "not json" not in caplog.text
 
 

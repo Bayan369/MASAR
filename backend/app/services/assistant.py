@@ -59,6 +59,47 @@ class ModelAnswer(BaseModel):
     citations: list[Citation] = Field(max_length=3)
 
 
+def log_answer_validation(error: ValidationError, raw: str) -> str:
+    """Only fixed labels, allowlisted field names and bounded numeric locations."""
+    errors = error.errors(include_input=False, include_context=False, include_url=False)
+    if any(item["type"] == "json_invalid" for item in errors):
+        line = column = 0  # Unavailable if stdlib accepts JSON rejected by Pydantic.
+        try:
+            json.loads(raw)
+        except json.JSONDecodeError as exc:
+            line, column = exc.lineno, exc.colno
+        except (ValueError, RecursionError):
+            pass
+        logger.warning("llama_json_error line=%s column=%s", line, column)
+        return "json_parse_error"
+    fields = {"supported", "answer", "citations", "source_id", "evidence_ids"}
+    kinds = {
+        "missing",
+        "extra_forbidden",
+        "bool_type",
+        "string_type",
+        "string_too_long",
+        "string_unicode",
+        "list_type",
+        "too_short",
+        "too_long",
+        "model_type",
+        "dict_type",
+    }
+    for item in errors[:8]:
+        path = []
+        for part in item["loc"]:
+            if isinstance(part, str) and part in fields:
+                path.append(part)
+            elif type(part) is int and 0 <= part <= 10000:
+                path.append(str(part))
+            else:
+                path.append("unknown_field")
+        kind = item["type"] if item["type"] in kinds else "schema_error"
+        logger.warning("llama_schema_error type=%s path=%s", kind, ".".join(path) or "root")
+    return "schema_validation_error"
+
+
 def answer_question(
     question: str, provider: CloudflareProvider, retrieved_hits=None, demo: bool = True
 ) -> Answer:
@@ -117,9 +158,9 @@ DOCUMENT CONTEXT:\n"""
         raw = fenced.group(1).strip()
     try:
         result = ModelAnswer.model_validate_json(raw)
-    except ValidationError:
-        # Never log ValidationError: it contains raw generated text/input values.
-        invalid_model_answer("json_or_answer_schema_invalid")
+    except ValidationError as error:
+        # Never log the exception, generated text, input values or dynamic field names.
+        invalid_model_answer(log_answer_validation(error, raw))
     if not result.supported:
         logger.info("llama_answer_not_found reason=model_explicitly_unsupported")
         return Answer(

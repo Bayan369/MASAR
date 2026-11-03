@@ -127,6 +127,18 @@ def extract_model_response(data: object) -> tuple[str, str]:
     return text, shape
 
 
+def finish_diagnostic(data: object) -> tuple[str, str]:
+    """Read optional provider metadata, never infer truncation from text length."""
+    result = data.get("result", data) if isinstance(data, dict) else None
+    reason = result.get("finish_reason") if isinstance(result, dict) else None
+    # Unknown/free-form upstream values must never enter logs.
+    allowed = {"stop", "length", "max_tokens", "eos_token", "end_turn", "content_filter"}
+    if not isinstance(reason, str) or reason not in allowed:
+        return ("unrecognized" if reason is not None else "unavailable"), "unknown"
+    truncated = "confirmed" if reason in {"length", "max_tokens"} else "not_reported"
+    return reason, truncated
+
+
 def network_kind(error: Exception) -> str:
     reason = error.reason if isinstance(error, URLError) else error
     if isinstance(reason, (TimeoutError,)):
@@ -291,12 +303,16 @@ class CloudflareProvider:
                         raise ResponseFormatError("embedding_shape_invalid")
                     return vectors
                 text, shape = extract_model_response(data)
+                finish_reason, truncation = finish_diagnostic(data)
                 logger.info(
-                    "workers_ai_success http_status=%s shape=%s chars=%s elapsed_ms=%s",
+                    "workers_ai_success http_status=%s shape=%s chars=%s elapsed_ms=%s "
+                    "finish_reason=%s truncation=%s",
                     http_status,
                     shape,
                     len(text),
                     round((monotonic() - start) * 1000),
+                    finish_reason,
+                    truncation,
                 )
                 return text
             except HTTPError as error:
