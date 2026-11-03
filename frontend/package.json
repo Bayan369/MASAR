@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run src",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --config playwright.demo.config.ts",
     "format:check": "prettier --check src e2e e2e-live e2e-demo *.ts *.js *.json index.html",
     "test:e2e:live": "playwright test --config playwright.live.config.ts",
     "test:demo": "playwright test --config playwright.demo.config.ts"

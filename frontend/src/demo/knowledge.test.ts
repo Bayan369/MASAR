@@ -72,3 +72,25 @@ describe("connected platform sources", () => {
     );
   });
 });
+
+it("renders no retired demo wording in catalog, procedure steps, evidence or assistant states", () => {
+  const retired = /تجريب|الديمو|نسخة العرض|Mock Data|Demo Assistant/;
+  for (const doc of knowledge) {
+    expect(doc.title).not.toMatch(retired);
+    for (const step of doc.steps) expect(step).not.toMatch(retired);
+  }
+  for (const q of [
+    "مرحبا",
+    "ساعدني",
+    "كم راتبي؟",
+    "كيف أبدأ أول يوم؟",
+    "How do I connect to VPN?",
+  ]) {
+    const result = respond(q, { step: 0 });
+    expect(result.text).not.toMatch(retired);
+    for (const source of result.sources) {
+      expect(source.title).not.toMatch(retired);
+      expect(source.quote).not.toMatch(retired);
+    }
+  }
+});

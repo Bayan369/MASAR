@@ -4,8 +4,7 @@ export const departments = [
     id: "hr",
     name: "الموارد البشرية",
     term: "HR",
-    about:
-      "يرافق الموظف في بداية رحلته وينظم إجراءاته الوظيفية في الشركة التجريبية.",
+    about: "يرافق الموظف في بداية رحلته وينظم إجراءاته الوظيفية في الشركة.",
     responsibilities: [
       "تنسيق استقبال الموظفين الجدد",
       "تسجيل طلبات الإجازة بعد موافقة المدير",
@@ -33,13 +32,13 @@ export const departments = [
     id: "finance",
     name: "المالية",
     term: "Finance",
-    about: "ينظم المستندات المالية الداخلية في هذا المثال التعليمي.",
+    about: "ينظم المستندات المالية الداخلية.",
     responsibilities: [
       "مراجعة المستندات المالية المحالة من المدير",
       "توضيح مسار الاستفسارات المالية",
     ],
     services: ["إرشادات المستندات المالية"],
-    when: "عند الحاجة لمعرفة جهة مراجعة مستند مالي؛ لا يتضمن الديمو رواتب أو مبالغ أو استحقاقات.",
+    when: "عند الحاجة لمعرفة جهة مراجعة مستند مالي؛ لا يحدد الدليل معلومات الرواتب أو المبالغ أو الاستحقاقات.",
     contact: "finance@masar-demo.invalid",
     aliases: ["المالية", "finance"],
   },
@@ -47,7 +46,7 @@ export const departments = [
     id: "administration",
     name: "الإدارة",
     term: "Administration",
-    about: "تنسق احتياجات مقر العمل والتجهيزات المكتبية في المثال التجريبي.",
+    about: "تنسق احتياجات مقر العمل والتجهيزات المكتبية.",
     responsibilities: [
       "تنسيق استقبال الموظف في المقر",
       "متابعة طلبات التجهيزات المكتبية",
@@ -61,7 +60,7 @@ export const departments = [
     id: "marketing",
     name: "التسويق",
     term: "Marketing",
-    about: "ينظم المحتوى التعريفي ومواد التواصل الخاصة بالشركة التجريبية.",
+    about: "ينظم المحتوى التعريفي ومواد التواصل الخاصة بالشركة.",
     responsibilities: ["تنسيق المواد التعريفية", "مراجعة المحتوى الاتصالي"],
     services: ["طلب مواد تعريفية"],
     when: "عند إعداد مادة تعريفية أو محتوى يتعلق بالشركة.",
@@ -72,8 +71,7 @@ export const departments = [
     id: "qa",
     name: "ضمان الجودة",
     term: "QA",
-    about:
-      "يساعد الفرق على توثيق الملاحظات وتحسين جودة إجراءات العمل التجريبية.",
+    about: "يساعد الفرق على توثيق الملاحظات وتحسين جودة إجراءات العمل.",
     responsibilities: [
       "مراجعة وضوح الإجراءات",
       "تنسيق ملاحظات الجودة مع الفريق المعني",
@@ -100,23 +98,23 @@ export const departments = [
 ] as const;
 export const departmentDocuments = departments.map((d) => ({
   id: `department-${d.id}`,
-  title: `بطاقة قسم ${d.name} (${d.term}) التجريبية`,
+  title: `بطاقة قسم ${d.name} (${d.term})`,
   terms: [...d.aliases],
   steps: [
     d.about,
     `المسؤوليات: ${d.responsibilities.join("، ")}. الخدمات: ${d.services.join("، ")}.`,
-    `متى تتواصل؟ ${d.when} جهة التواصل التجريبية: ${d.contact} — عنوان غير فعلي، لا يُستخدم للمراسلة.`,
+    `متى تتواصل؟ ${d.when} جهة التواصل: ${d.contact}.`,
   ],
 }));
 export const demoNavigation = [
-  { path: "/demo", label: "الرئيسية", term: "Home" },
-  { path: "/demo/departments", label: "دليل الأقسام", term: "Departments" },
+  { path: "/", label: "الرئيسية", term: "Home" },
+  { path: "/departments", label: "دليل الأقسام", term: "Departments" },
   {
-    path: "/demo/onboarding",
+    path: "/onboarding",
     label: "دليل الموظف الجديد",
     term: "Getting Started",
   },
-  { path: "/demo/policies", label: "السياسات والإجراءات", term: "Policies" },
-  { path: "/demo/documents", label: "المستندات والملفات", term: "Documents" },
-  { path: "/demo/assistant", label: "مسار الذكي", term: "MASAR AI" },
+  { path: "/policies", label: "السياسات والإجراءات", term: "Policies" },
+  { path: "/documents", label: "المستندات والملفات", term: "Documents" },
+  { path: "/assistant", label: "مسار الذكي", term: "MASAR AI" },
 ];

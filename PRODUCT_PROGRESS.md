@@ -110,3 +110,12 @@ acceptance blockers remain; offline demo success does not satisfy live Llama acc
 - [x] Verify 27 unit tests, ESLint, TypeScript/production build and Prettier.
 - [x] Verify all 29 valid direct/deep routes plus 4 missing-page cases, cross-page source links, chat context after navigation and desktop/mobile accessibility/overflow on actual production frontend: all 4 browser scenarios pass; zero external requests/page errors.
 - [x] Publish verified feature implementation 772f759 to origin/feat/phase-1-foundation; live remote hash verified equal and working tree clean. No main merge, hosted SQL or public deployment.
+
+## Direct-entry platform UI/UX refinement — 2026-11-03
+
+- [x] Remove authentication entry from the active frontend router; root renders Home without redirect, login/recovery URLs return Home and legacy /demo links resolve to canonical platform routes.
+- [x] Remove demo/disclaimer wording from rendered shell, content, sources and chat states; preserve source integrity, uncertain/unknown answers and all 7 departments/13 documents.
+- [x] Refine shared RTL design tokens, sidebar/topbar/mobile menu, Home composition, department details, searchable directory, policy guides, searchable/filterable documents, reading layout and conversation history/composer. Desktop visual review completed; keyboard/empty/focus states implemented.
+- [x] Verify all 29 canonical pages and 29 old /demo aliases, login/recovery redirects, source links, missing pages, search/filter/empty states, context after navigation and keyboard controls. All 12 desktop/tablet/mobile browser scenarios pass; zero external requests, page errors, retired visible copy or horizontal overflow. Axe checks pass after contrast/mobile-landmark fixes.
+- [x] Unit suite: 28 pass; all 12 active browser scenarios, production build, ESLint and Prettier pass. Actual screenshots reviewed for Home, department detail, document list, onboarding and conversation on desktop/tablet/mobile. The active browser suite replaces now-inapplicable Auth UI contracts; original integration references remain in e2e/.
+- [~] Publish verified refinement to the existing feature branch; no Backend/database/env changes or public deployment.

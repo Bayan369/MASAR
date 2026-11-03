@@ -118,13 +118,11 @@ npm ci
 npm run dev -- --host 127.0.0.1
 ```
 
-Open **http://127.0.0.1:5173/demo** for the employee platform; `/` opens the same home. MASAR AI is at `/demo/assistant`. No login is needed.
+Open **http://127.0.0.1:5173/** for the employee platform. MASAR AI is at `/assistant`; old `/demo/...` links redirect to the equivalent platform page. There is no login screen in the active application.
 No Backend, credentials, Supabase, Cloudflare, SQL or hosted setup is required.
-The separate `/demo` route does not mount the authenticated workspace; existing real
-login, upload, RAG and database code is preserved. The demo home is now the default entry.
+The active frontend router never mounts AuthProvider, login or the protected workspace. Backend integrations and database files are preserved, but are not invoked by this presentation.
 
-All company information and procedures on this route are **fictional Mock Data**,
-explicitly marked in the UI. This is a deterministic local conversation engine,
+Company information and procedures remain local fixture data. Per the owner’s presentation requirements, the UI has no demo labels or setup notices; this does not make the data live company records. This is a deterministic local conversation engine,
 not Llama inference or general natural-language intelligence. It tracks topic and
 procedure step per conversation, supports Arabic/English topic keywords and
 follow-ups, asks for clarification, and refuses missing facts. Source excerpts
@@ -143,14 +141,29 @@ browser checks, including zero external requests and accessibility checks.
 
 ### Employee platform demo pages
 
-- `/demo`: welcome, fictional company introduction and service shortcuts.
-- `/demo/departments` and `/demo/departments/:id`: seven department cards, responsibilities, services, when to contact and clearly fictional `.invalid` addresses.
-- `/demo/onboarding`: first day, equipment and basic orientation steps.
-- `/demo/policies` and `/demo/policies/:id`: leave, IT support and VPN procedures.
-- `/demo/documents` and `/demo/documents/:id`: local source text and explicit demo-ready status; no upload or processing is claimed.
-- `/demo/assistant`: existing contextual chat, with department and original-document links.
+- `/`: welcome, fictional company introduction and service shortcuts.
+- `/departments` and `/departments/:id`: seven department cards, responsibilities, services, when to contact and clearly fictional `.invalid` addresses.
+- `/onboarding`: first day, equipment and basic orientation steps.
+- `/policies` and `/policies/:id`: leave, IT support and VPN procedures.
+- `/documents` and `/documents/:id`: local source text, searchable by title/content and filtered by category; no upload or processing is claimed.
+- `/assistant`: existing contextual chat, with department and original-document links.
 
 All content shares the same local knowledge catalog. Client-side navigation preserves
 chat state; refreshing still clears it. `npm run test:demo` checks direct routes,
 source links, chat continuity, unknown pages, desktop/mobile accessibility and
 absence of external requests against the actual built frontend on port5175.
+
+
+### Current presentation UI and checks
+
+`/` opens Home without a redirect or authentication. `/login` and `/reset-password`
+return Home. Old `/demo` URLs keep working. The sidebar, responsive navigation,
+searchable department directory, document filters, source reading, procedure guides
+and conversation use one RTL visual system. All 7 departments and 13 documents
+remain present; no new company facts, accounts, analytics or hosted data were added.
+
+`npm run test:e2e` (also `npm run test:demo`) now checks the active unauthenticated
+product against a production build on port5175, with desktop, tablet and mobile
+projects. The older `e2e/` Auth contracts refer to the previous authenticated UI and
+are retained as historical integration references, not acceptance tests for this
+presentation. Unit, lint, formatting and build commands remain unchanged.
