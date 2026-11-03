@@ -27,8 +27,12 @@ class Settings(BaseSettings):
     cloudflare_api_token: SecretStr = SecretStr("")
     cloudflare_model: str = "@cf/meta/llama-3.1-8b-instruct-fp8-fast"
     cloudflare_free_plan_confirmed: bool = False
+    demo_requests_per_minute: int = Field(default=6, ge=1, le=60)
+    demo_max_concurrent: int = Field(default=1, ge=1, le=4)
+    demo_total_requests: int = Field(default=100, ge=0, le=10000)
+    demo_max_ips: int = Field(default=10000, ge=1, le=100000)
     app_name: str = "MASAR"
-    environment: Literal["development", "test", "production"] = "development"
+    environment: Literal["development", "test", "production", "demo"] = "development"
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
 
     @model_validator(mode="after")
@@ -74,6 +78,34 @@ class Settings(BaseSettings):
             raise ValueError(
                 "A public publishable key is required for Supabase browser/API settings"
             )
+        if self.environment == "demo":
+            import re
+
+            from app.services.cloudflare import SUPPORTED_MODELS
+
+            if not (
+                self.demo_enabled
+                and re.fullmatch(r"[0-9a-fA-F]{32}", self.cloudflare_account_id)
+                and self.cloudflare_api_token.get_secret_value().strip()
+                and self.cloudflare_free_plan_confirmed
+                and self.cloudflare_model in SUPPORTED_MODELS
+            ):
+                raise ValueError("Demo requires explicit enablement and configured Workers Free AI")
+            for origin in self.cors_origins:
+                candidate = urlparse(origin)
+                if not (
+                    candidate.scheme == "https"
+                    and candidate.hostname
+                    and not candidate.username
+                    and not candidate.password
+                    and not candidate.query
+                    and not candidate.fragment
+                    and candidate.path == ""
+                    and "*" not in origin
+                ):
+                    raise ValueError("Demo requires explicit HTTPS CORS origins")
+            if not self.cors_origins:
+                raise ValueError("Demo requires explicit HTTPS CORS origins")
         if self.environment == "production":
             if self.demo_enabled or not all(
                 [

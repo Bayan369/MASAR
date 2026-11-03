@@ -4,6 +4,8 @@ Arabic-first, RTL internal knowledge assistant. React 19 / TypeScript / Vite 6 /
 
 The production path uses **authenticated company documents**, never the packaged fictional demo corpus. Actual hosted Auth/Storage/inference verification is pending external configuration and approved migration application. See [PRODUCT_PROGRESS.md](PRODUCT_PROGRESS.md) for verified evidence and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for release steps. No hosted migrations or deployment were performed during development.
 
+For the separate anonymous training trial, see [Public Llama Demo](docs/PUBLIC_LLAMA_DEMO.md). This mode requires explicit configuration; mocked tests do not establish live inference or deployment.
+
 ## Structure
 
 ```text

@@ -13,6 +13,7 @@ from app.config import get_settings
 from app.api.product import router as product_router
 from app.api.chat import router as chat_router
 from app.security import BodyLimit
+from app.services.demo_limits import DemoLimits
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,10 @@ def create_app(settings=None) -> FastAPI:
     )
     app.state.ai_provider = CloudflareProvider(settings)
     app.include_router(router)
-    app.include_router(product_router)
-    app.include_router(chat_router)
+    app.state.demo_limits = DemoLimits(settings)
+    if settings.environment != "demo":
+        app.include_router(product_router)
+        app.include_router(chat_router)
     if settings.demo_enabled and settings.environment != "production":
         app.include_router(assistant_router)
 
@@ -61,7 +64,9 @@ def create_app(settings=None) -> FastAPI:
             if isinstance(exc.detail, dict)
             else {"code": "HTTP_ERROR", "message": "الطلب غير متاح أو لم يتم العثور على المورد."}
         )
-        return JSONResponse(status_code=exc.status_code, content={"error": detail})
+        return JSONResponse(
+            status_code=exc.status_code, content={"error": detail}, headers=exc.headers
+        )
 
     @app.exception_handler(Exception)
     async def unexpected_error(_: Request, exc: Exception) -> JSONResponse:

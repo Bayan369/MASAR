@@ -23,7 +23,10 @@ class Question(BaseModel):
 @router.post("/demo/ask", response_model=Answer)
 def ask(body: Question, request: Request) -> Answer:
     try:
-        return answer_question(body.question, request.app.state.ai_provider)
+        with request.app.state.demo_limits.admit(
+            request.client.host if request.client else "unknown"
+        ):
+            return answer_question(body.question, request.app.state.ai_provider)
     except AIUnavailable as error:
         raise HTTPException(
             status_code=error.status, detail={"code": error.code, "message": error.message}

@@ -13,7 +13,7 @@ const config = JSON.parse(
 if (
   config.outputDirectory !== "dist" ||
   config.rewrites?.length !== 1 ||
-  config.rewrites[0].source !== "/(.*)" ||
+  config.rewrites[0].source !== "/((?!api/).*)" ||
   config.rewrites[0].destination !== "/index.html" ||
   !config.headers?.every((rule) => rule.source === "/(.*)")
 ) {
@@ -57,6 +57,12 @@ const server = createServer(async (request, response) => {
     const exists = await stat(file)
       .then((value) => value.isFile())
       .catch(() => false);
+    if (!exists && pathname.startsWith("/api/")) {
+      response
+        .writeHead(404, { ...headers, "Content-Type": "application/json" })
+        .end('{"error":"API functions require the Vercel runtime"}');
+      return;
+    }
     if (!exists) file = resolve(output, "." + config.rewrites[0].destination);
     const body = await readFile(file);
     response.writeHead(200, {

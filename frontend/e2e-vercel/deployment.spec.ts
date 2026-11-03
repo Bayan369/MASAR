@@ -70,6 +70,9 @@ test("direct routes and reloads work with production headers and local assets", 
       ),
     ).toEqual([]);
   }
+  const missingApi = await page.request.get("/api/not-a-function");
+  expect(missingApi.status()).toBe(404);
+  expect(missingApi.headers()["content-type"]).not.toContain("text/html");
   const output = resolve("dist");
   const files = await readdir(resolve(output, "assets"));
   for (const file of files.filter((name) => /\.(js|css|woff2?)$/.test(name))) {

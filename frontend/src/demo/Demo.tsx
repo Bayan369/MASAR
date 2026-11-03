@@ -34,6 +34,7 @@ import {
   Missing,
 } from "./PlatformPages";
 import { respond, statusLabels, type Context, type Reply } from "./knowledge";
+import { askLlama, liveDemo } from "./llama";
 import { PageHeader } from "../design/Primitives";
 import { GatewayMark } from "../design/GatewayMark";
 import { usePageMotion } from "../design/usePageMotion";
@@ -69,6 +70,10 @@ export default function Demo() {
   const [selected, setSelected] = useState(1);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
+  const [chatError, setChatError] = useState<{
+    id: number;
+    message: string;
+  } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const messageInput = useRef<HTMLTextAreaElement>(null);
@@ -119,11 +124,11 @@ export default function Demo() {
     setInput("");
     messageInput.current?.focus();
   }
-  function send(e: React.FormEvent) {
+  async function send(e: React.FormEvent) {
     e.preventDefault();
     const text = input.trim();
     if (!text || typing) return;
-    const result = respond(text, chat.context);
+    setChatError(null);
     setChats((items) =>
       items.map((c) =>
         c.id === selected
@@ -137,7 +142,14 @@ export default function Demo() {
     );
     setInput("");
     setTyping(true);
-    timer.current = setTimeout(() => {
+    try {
+      const result = liveDemo
+        ? await askLlama(text, chat.context)
+        : respond(text, chat.context);
+      if (!liveDemo)
+        await new Promise<void>((resolve) => {
+          timer.current = setTimeout(resolve, 450);
+        });
       setChats((items) =>
         items.map((c) =>
           c.id === selected
@@ -152,9 +164,16 @@ export default function Demo() {
             : c,
         ),
       );
+    } catch (error) {
+      setChatError({
+        id: selected,
+        message:
+          error instanceof Error ? error.message : "تعذّر الاتصال بخدمة Llama.",
+      });
+    } finally {
       setTyping(false);
       messageInput.current?.focus();
-    }, 450);
+    }
   }
   return (
     <div
@@ -378,7 +397,7 @@ export default function Demo() {
                     <p dir="auto">{m.text}</p>
                     {m.role === "assistant" &&
                       m.reply.sources.map((s) => (
-                        <details key={s.title}>
+                        <details key={`${s.title}-${s.quote}`}>
                           <summary>
                             <BookOpen size={14} />
                             المصدر: {s.title}
@@ -426,6 +445,9 @@ export default function Demo() {
                     </span>
                     مسار يكتب…
                   </p>
+                )}
+                {chatError?.id === selected && (
+                  <p role="alert">{chatError.message}</p>
                 )}
                 <div ref={bottom} />
               </section>
