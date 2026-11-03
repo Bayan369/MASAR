@@ -108,3 +108,34 @@ The SQL runner accepts no remote database URL, starts a network-disabled disposa
 ## Boundaries
 
 PDF/DOCX/UTF-8 TXT, 5MiB, 100 PDF pages, 100k extracted characters, at most 80 chunks. Scanned/encrypted/empty documents report failure; OCR is outside the supported product. No HRMS, external document connectors, billing setup, open company signup or SSO provider assumptions. Production readiness still requires configured external services, approved migrations, real document/identity acceptance testing and TLS hosting. [Security and operational limits](docs/DEPLOYMENT.md#operations-and-security).
+
+
+## Offline conversation demo — no external services
+
+```sh
+cd frontend
+npm ci
+npm run dev -- --host 127.0.0.1
+```
+
+Open **http://127.0.0.1:5173/demo** (or use the demo link on Login).
+No Backend, credentials, Supabase, Cloudflare, SQL or hosted setup is required.
+The separate `/demo` route does not mount the authenticated workspace; existing real
+login, upload, RAG and database paths remain unchanged.
+
+All company information and procedures on this route are **fictional Mock Data**,
+explicitly marked in the UI. This is a deterministic local conversation engine,
+not Llama inference or general natural-language intelligence. It tracks topic and
+procedure step per conversation, supports Arabic/English topic keywords and
+follow-ups, asks for clarification, and refuses missing facts. Source excerpts
+are exact strings from `frontend/src/demo/knowledge.ts`. Unsupported questions
+return “معلومة غير متوفرة”; department suggestions are explicitly uncertain.
+
+Try: “كيف أبدأ أول يوم؟” → “طيب وبعدها؟” → “وش تقصد؟”, then “كم راتبي؟”.
+Start another conversation to verify context isolation, then switch back using
+history. History exists only in memory until refresh. Never enter personal or
+confidential information in this demo. No fake authentication is performed.
+
+Validation: `npm test`, `npm run lint`, `npm run build`, `npm run test:demo`.
+The last command builds and serves the actual production frontend on port5175 and runs desktop/mobile
+browser checks, including zero external requests and accessibility checks.

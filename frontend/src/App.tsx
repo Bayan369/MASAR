@@ -1,3 +1,4 @@
+import Demo from "./demo/Demo";
 import { AuthProvider, RequireAuth, useAuth } from "./auth/AuthProvider";
 import Recovery from "./pages/Recovery";
 import { useEffect, useRef, useState } from "react";
@@ -213,7 +214,7 @@ function Workspace() {
     </div>
   );
 }
-export default function App() {
+function AuthenticatedApp() {
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -234,5 +235,15 @@ export default function App() {
         </Routes>
       </AuthProvider>
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Demo />} />
+      <Route path="/demo" element={<Demo />} />
+      <Route path="*" element={<AuthenticatedApp />} />
+    </Routes>
   );
 }

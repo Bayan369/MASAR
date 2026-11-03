@@ -59,6 +59,9 @@ export default function Login() {
   return (
     <main className="login-page" id="main-content">
       <section className="login-form-side">
+        <Link className="inline-notice" to="/demo">
+          جرّب مسار ببيانات تجريبية — دون تسجيل دخول
+        </Link>
         <Link to="/" className="login-back">
           <ArrowRight size={18} />
           العودة إلى مساحة العمل

@@ -74,3 +74,28 @@ Owner approved pending-only hosted migrations, initial Auth admin/company bootst
 - [!] Hosted foundation awaits storage_read to inspect bucket privacy and database_migrations_write to apply/record migrations after refreshed conflict checks. No Full access requested; no denied operation bypassed.
 - [!] Actual Auth login/creation, upload/indexing/Llama/recovery acceptance awaits private Supabase app keys and Cloudflare account/token. App health200/local UI rendering and offline tests are not a successful live acceptance run.
 - [x] Record interim acceptance honestly in docs/DEMO_LIVE_STATUS.md: Storage403, no hosted writes, runtime keys missing, no real Llama/Auth journey. Narrow permissions documented from official API metadata, not guessed.
+
+
+## Explicitly authorized offline Mock Data conversation demo — 2026-11-03
+
+This owner-requested demo is separate from the real integrations. Earlier live
+acceptance blockers remain; offline demo success does not satisfy live Llama acceptance.
+
+- [x] Inspect current feature branch and existing Auth/assistant paths; clean initial tree.
+- [x] Add isolated `/demo` outside AuthProvider, preserving real routes; no credentials or Backend needed.
+- [x] Add clearly fictional company/department/onboarding/leave/IT/VPN/communication knowledge and exact source excerpts.
+- [x] Verify per-chat topic/step context, Arabic/English follow-ups, clarification, missing-fact refusal and source integrity with five unit tests.
+- [x] Add Arabic RTL history, new-chat control, typing indicator, composer, source details and three confidence states; history is memory-only.
+- [x] Desktop/mobile browser scenario: multi-turn discussion, source quote, unknown question, new-chat isolation and old-chat retrieval; zero external requests, no horizontal overflow and Axe checks pass (2 tests).
+- [x] Final frontend rerun: 25 unit tests pass; lint/build/format pass; both offline browser scenarios pass after follow-up aliases.
+- [ ] Commit/push offline demo changes (not performed in this task).
+- [x] Existing workspace regression suite: 24 desktop/mobile/tablet browser checks passed; authenticated product routes preserved.
+- [x] Full unchanged Backend regression suite: 131 tests pass with local TestClient socket access; no hosted operations.
+
+- [x] Urgent demo entry: `/` and `/demo` both render outside AuthProvider; removed real-login link from demo sidebar. Verified actual running Vite on port5173: both routes HTTP200, no redirects or external requests. Repeated 25 unit tests, 2 offline browser checks, lint/build pass. No hosted changes.
+
+## Published demo route correction — 2026-11-03
+
+- [x] Identify cause: remote commit6db8945 lacks all uncommitted demo files; its wildcard route requires authentication.
+- [x] Define `/` and `/demo` at the top-level router outside AuthProvider/RequireAuth. Include complete offline demo implementation, sources and tests in the release.
+- [x] Verify actual production frontend build on port5175: 2 desktop/mobile acceptance tests pass, 25 unit tests pass, lint passes. Root and /demo render anonymously with zero external requests.
