@@ -1,6 +1,6 @@
 # Database and Storage design
 
-The original two Foundation migrations are preserved; three additive migrations complete trusted product operations. **All five were executed only against disposable local PostgreSQL 17 / pgvector 0.8.1. No SQL ran against hosted `masar-dev`.**
+The original two Foundation migrations are preserved; three additive migrations complete trusted product operations. **All five were executed only against disposable local PostgreSQL 17 / pgvector 0.8.1. No hosted migrations or data writes occurred; owner-approved read-only catalog SELECTs are recorded in the 2026-11-03 update below.**
 
 | Table | Purpose and relationships |
 | --- | --- |
@@ -56,3 +56,7 @@ Storage objects are located at `companyUUID/documentUUID.ext`. Metadata checks r
 `python supabase/tests/run_local.py`: **81 original + 35 product assertions**, real local PostgreSQL, all migrations applied, RLS/role/cross-company probes, vector/lexical retrieval, storage policies, worker lease/publication and citation revocation. Fixtures transactionally roll back; seven tables empty; container/volumes removed. The harness provides only minimal local Auth/Storage schema compatibility, not a live Supabase gateway/Auth/Storage implementation.
 
 Ordered migration files are one-time, separately transactional. An operator must inspect hosted schema/extensions/bucket compatibility and migration history before the deployment steps. Do not rerun SQL over existing tables or relocate an existing vector extension silently. Existing manual/prototype metadata without original files/hash/chunks is not automatically ingested. Existing service keys/migration owners can bypass RLS; protect and audit those credentials. Backups and restore drills are operator tasks before live rollout. No seeds, fake company records or hosted resources were created.
+
+## Demo preflight update — 2026-11-03
+
+Owner-approved read-only catalog SELECTs verified the hosted baseline (no schema/data writes): PostgreSQL17.11; public MASAR tables/private schema absent; vector available0.8.2 but not installed; migration history empty; no name collisions in the inspected MASAR objects. Bucket privacy remains unverified because the read token lacks storage_read. Migration3 was changed before any hosted application to ALTER the existing messages_read policy in place. The local116 SQL checks plus OID-preservation check pass on both the original0.8.1 image and PostgreSQL17/pgvector0.8.2. Do not apply until Storage and narrow migration-write access are ready, and refresh preflight first.

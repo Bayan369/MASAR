@@ -11,8 +11,8 @@ Choose final frontend/API URLs. Terminate TLS using your host or reverse proxy. 
 Copy templates **without overwriting existing private files**:
 
 ```sh
-cpdeploy/backend.env.example backend/.env
-cpdeploy/frontend.env.example frontend/.env
+cp deploy/backend.env.example backend/.env
+cp deploy/frontend.env.example frontend/.env
 ```
 
 Use your hosting secret manager in production instead of committed files. `backend/.env` is server-only; never pass it as frontend build input. Never paste secrets into shell commands, chat, CI logs, support screenshots or Git. Fill:

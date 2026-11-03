@@ -139,8 +139,8 @@ create index chunks_bge_m3_cosine on public.document_chunks using hnsw((embeddin
 
 -- Prior citations can become inaccessible after document archival/deletion or a
 -- department change; hide the whole assistant message, not just its link.
-drop policy messages_read on public.messages;
-create policy messages_read on public.messages for select to authenticated using (
+-- Preserve the existing policy object while tightening source revocation.
+alter policy messages_read on public.messages using (
  company_id=(select private.company_id()) and exists(select 1 from public.conversations c where c.id=messages.conversation_id and c.company_id=messages.company_id and c.owner_id=(select auth.uid()))
  and (role='user' or not exists(select 1 from jsonb_array_elements(citations) ref where not private.can_read_document(messages.company_id,(ref->>'document_id')::uuid))));
 

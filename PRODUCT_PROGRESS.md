@@ -32,3 +32,45 @@ Evidence: docs/VALIDATION.md. Setup/deployment: docs/DEPLOYMENT.md. Architecture
 
 - [x] Reproduce legacy stdout encoding corruption with a real subprocess under cp1252:replace; enforce explicit UTF-8 binary output/strict parent decoding and fixed child UTF-8 settings while retaining the environment allowlist and25-second timeout. Four regression cases verify Arabic/English preservation, secret isolation and invalid-encoding rejection.
 - [x] Complete Backend suite: `UV_CACHE_DIR=/tmp/masar-encoding-uv uv run --frozen --extra dev pytest` —131 passed on Linux/Python3.12.14, including legacy Windows-style stream simulation. Ruff lint/format passed. No hosted SQL, Supabase operations, commits or pushes.
+
+## One-hour demo preparation — 2026-11-03
+
+- [x] Review current branch929171c, existing deployment/migrations/bootstrap/worker paths; initial tree clean.
+- [x] Local readiness only:131 Backend tests pass and frontend production build passes. Credential presence checked without displaying values: required Supabase/Cloudflare fields unset; current Codex policy lacks Cloudflare hostname.
+- [x] Prepare docs/DEMO_ONE_HOUR.md with timed approval gates and existing run commands; correct two malformed template-copy commands in DEPLOYMENT.md. No application changes.
+- [!] Hosted schema/Auth/Storage/data writes and live inference await the owner's review/approval and private configuration. No users, hosted SQL, Supabase writes or environment policy changes performed.
+
+## Approved demo execution — 2026-11-03
+
+Owner approved pending-only hosted migrations, initial Auth admin/company bootstrap, demo document/chunks/conversation and Workers Free inference. No resets/deletion/deployment/main changes.
+
+- [x] Confirm feat/phase-1-foundation at929171c; preserve preexisting local planning-doc changes.
+- [x] Inspect local five migration files and existing bootstrap configuration. No Supabase CLI/psql or connected Supabase tool available; no remote schema/history inspection claimed.
+- [x] Prepare docs/demo/masar-demo-guide.txt with explicitly labeled technical demo content derived from implemented application behavior, not invented company policies. Actual bounded extraction verifies one UTF-8 chunk locally.
+- [!] Hosted schema/conflict inspection is blocked: required Supabase app credentials and migration/admin access absent; no configured secret bindings. Current network permits only the selected Supabase project domain, not api.cloudflare.com or the Supabase Management API domain. No hosted calls/writes, users or inference created/performed. Private configuration and any required network-management scope must be resolved first.
+- [ ] After access is ready: inspect target identity/schema/extensions/migration history and conflicts read-only; stop on conflicts; apply missing migrations only.
+- [ ] After schema gate: create/use the approved Auth Admin, run company bootstrap, upload/process demo TXT, ask a cited question and verify original source/history. No success marked without live evidence.
+
+## Maximum local demo readiness — 2026-11-03
+
+- [x] Reverified131 Backend tests and Ruff;20 frontend unit tests,24 browser contract tests, ESLint/Prettier/TypeScript and production build pass. Browser contracts are not live Auth/AI proof.
+- [x] Fill only empty non-secret API/project URL settings in ignored backend/.env and frontend/.env; preserve existing values and never insert dummy credentials. No .env tracked.
+- [x] Start actual local FastAPI and Vite services. Do not start the hosted-processing worker before schema/access gates.
+- [x] Inspect official Studio extension/policy source and Management permission schemas. Confirm `database_read` works and `storage_read` is still denied403; do not treat OpenAPI as the database inventory.
+- [x] Prepare catalog-only SELECT in docs/DEMO_PREFLIGHT_CATALOG_READ_ONLY.sql and least-privilege steps in docs/DEMO_ACCESS.md. Query has NOT been executed; earlier SQL prohibition remains respected.
+- [!] Conflict/vector/RLS/bucket verification awaits `storage_read` plus explicit permission for catalog SELECTs through the read-only endpoint (database_read already available), or equivalent trusted Dashboard metadata.
+- [!] After the conflict gate only, applying migrations requires `database_migrations_write`; no Full access requested and no write attempted with the read token.
+- [!] Live login/upload/indexing/Llama test still requires private application keys/Cloudflare settings and the owner's Admin/company details; no fake integration or provider response substituted.
+- [x] Actual unmocked local runtime check completed: frontend/login HTTP200, API health HTTP200, Arabic RTL rendered, zero external browser requests. Auth correctly reports missing configuration; no successful login/hosted AI claimed.
+
+## End-to-end demo authorization and local hardening — 2026-11-03
+
+- [x] Receive the owner's Admin/company inputs and preserve them only in ignored backend/.env; no login password generated and no hosted account created.
+- [x] Verify current masar-dev ACTIVE_HEALTHY and empty migration history by authenticated GET; Storage listing remains403 missing storage_read. Treat the Management token as read-only; no write probe attempted.
+- [x] Preserve the actual catalog preflight findings in docs/demo/catalog-preflight-summary.json. The earlier SQL-read-only gate was explicitly approved and completed; bucket privacy still unknown.
+- [x] Remove DROP POLICY from the unapplied migration3 in favor of ALTER POLICY, preserving permissions/identity. No top-level DROP remains in the five migration files.
+- [x] Add an actual policy-OID preservation check and exact official-image digest override to the local SQL runner; verify116 SQL assertions plus policy preservation on pgvector0.8.2/PostgreSQL17.10, with fixture rollback/container cleanup. No hosted schema/data changed.
+- [~] Commit/push verified local demo preparation and non-destructive migration changes on feat/phase-1-foundation.
+- [!] Hosted foundation awaits storage_read to inspect bucket privacy and database_migrations_write to apply/record migrations after refreshed conflict checks. No Full access requested; no denied operation bypassed.
+- [!] Actual Auth login/creation, upload/indexing/Llama/recovery acceptance awaits private Supabase app keys and Cloudflare account/token. App health200/local UI rendering and offline tests are not a successful live acceptance run.
+- [x] Record interim acceptance honestly in docs/DEMO_LIVE_STATUS.md: Storage403, no hosted writes, runtime keys missing, no real Llama/Auth journey. Narrow permissions documented from official API metadata, not guessed.

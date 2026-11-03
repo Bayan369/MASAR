@@ -5,6 +5,8 @@ local Docker socket is used. No seed data survives test transaction rollback.
 """
 
 from pathlib import Path
+import argparse
+import re
 import os
 import subprocess
 import time
@@ -41,10 +43,12 @@ def docker(
     )
 
 
-def main() -> None:
+def main(image: str = IMAGE) -> None:
+    if not re.fullmatch(r"pgvector/pgvector@sha256:[0-9a-f]{64}", image):
+        raise ValueError("Only an exact official pgvector image digest is accepted")
     name = "masar-rls-" + uuid.uuid4().hex[:12]
     # Refuse a network pull here: provision the exact image digest explicitly.
-    docker("image", "inspect", IMAGE)
+    docker("image", "inspect", image)
     started = False
     try:
         docker(
@@ -61,7 +65,7 @@ def main() -> None:
             "128m",
             "-e",
             "POSTGRES_HOST_AUTH_METHOD=trust",
-            IMAGE,
+            image,
         )
         started = True
         for _ in range(60):
@@ -102,10 +106,17 @@ def main() -> None:
             return result.stdout
 
         execute((ROOT / "supabase/tests/harness/local_auth_bootstrap.sql").read_text())
+        policy_oid = None
+        policy_query = (
+            "select p.oid from pg_policy p join pg_class c on c.oid=p.polrelid "
+            "join pg_namespace n on n.oid=c.relnamespace "
+            "where n.nspname='public' and c.relname='messages' and p.polname='messages_read';"
+        )
         for path in sorted((ROOT / "supabase/migrations").glob("*.sql")):
             execute(path.read_text())
             print("Migration applied locally:", path.name, flush=True)
             if path.name.startswith("20261102000200"):
+                policy_oid = execute(policy_query).strip()
                 result = execute((ROOT / "supabase/tests/tenant_rls.sql").read_text())
                 summaries = [
                     line
@@ -120,6 +131,16 @@ def main() -> None:
                         f"Expected exactly {EXPECTED_CHECKS} completed SQL assertions"
                     )
                 print(summaries[0], flush=True)
+
+            if path.name.startswith("20261102000300"):
+                if not policy_oid or execute(policy_query).strip() != policy_oid:
+                    raise RuntimeError(
+                        "Source-revocation migration replaced the existing policy"
+                    )
+                print(
+                    "PASS: existing messages_read policy preserved in place.",
+                    flush=True,
+                )
 
             if path.name.startswith("20261102000100"):
                 closed = execute(
@@ -157,8 +178,12 @@ def main() -> None:
         if remaining != "0":
             raise RuntimeError("Test data did not roll back")
         print("Rollback verified: all seven application tables empty.", flush=True)
+        versions = execute(
+            "select current_setting('server_version') || ' / pgvector ' || extversion "
+            "from pg_extension where extname='vector';"
+        ).strip()
         print(
-            "PASS: PostgreSQL 17 / pgvector 0.8.1; no network or hosted database access.",
+            "PASS: PostgreSQL " + versions + "; no network or hosted database access.",
             flush=True,
         )
     finally:
@@ -168,8 +193,15 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--image",
+        default=IMAGE,
+        help="Exact cached official image digest; never a remote DB URL",
+    )
+    args = parser.parse_args()
     try:
-        main()
+        main(args.image)
     except subprocess.CalledProcessError as error:
         print(error.stdout or "", end="")
         print(error.stderr or "", end="")
