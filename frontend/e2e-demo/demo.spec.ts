@@ -398,3 +398,59 @@ test("assistant viewport, welcome suggestions and fixed composer", async ({
     fullPage: true,
   });
 });
+
+test("assistant uses the app canvas without an inner page at wide and short sizes", async ({
+  page,
+}, info) => {
+  const sizes =
+    info.project.name === "desktop"
+      ? [
+          { width: 1920, height: 1080 },
+          { width: 1280, height: 540 },
+        ]
+      : info.project.name === "mobile"
+        ? [{ width: 375, height: 667 }]
+        : [{ width: 900, height: 700 }];
+  for (const size of sizes) {
+    await page.setViewportSize(size);
+    await page.goto("/assistant");
+    await page.evaluate(() => document.fonts.ready);
+    const geometry = await page.evaluate(() => {
+      const main = document.querySelector(".demo-main")!;
+      const body = document.querySelector(".platform-body")!;
+      const log = document.querySelector(".demo-messages")!;
+      const composer = document.querySelector(".demo-composer")!;
+      const mainRect = main.getBoundingClientRect();
+      const bodyRect = body.getBoundingClientRect();
+      const logRect = log.getBoundingClientRect();
+      return {
+        fullWidth:
+          Math.abs(mainRect.width - bodyRect.width) < 1 &&
+          Math.abs(mainRect.x - bodyRect.x) < 1,
+        messagesFullWidth: Math.abs(logRect.width - mainRect.width) < 1,
+        wrappers: [".platform-chat", ".platform-chat-content"].map(
+          (selector) =>
+            getComputedStyle(document.querySelector(selector)!).display,
+        ),
+        pageFits:
+          document.documentElement.scrollHeight <= innerHeight + 1 &&
+          document.documentElement.scrollWidth <= innerWidth,
+        welcomeFits: log.scrollHeight <= log.clientHeight + 1,
+        composerFits:
+          composer.getBoundingClientRect().bottom <= innerHeight + 1,
+      };
+    });
+    expect(geometry).toEqual({
+      fullWidth: true,
+      messagesFullWidth: true,
+      wrappers: ["contents", "contents"],
+      pageFits: true,
+      welcomeFits: true,
+      composerFits: true,
+    });
+    await page.screenshot({
+      path: info.outputPath(`canvas-${size.width}.png`),
+      fullPage: true,
+    });
+  }
+});
