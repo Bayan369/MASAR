@@ -99,3 +99,14 @@ acceptance blockers remain; offline demo success does not satisfy live Llama acc
 - [x] Identify cause: remote commit6db8945 lacks all uncommitted demo files; its wildcard route requires authentication.
 - [x] Define `/` and `/demo` at the top-level router outside AuthProvider/RequireAuth. Include complete offline demo implementation, sources and tests in the release.
 - [x] Verify actual production frontend build on port5175: 2 desktop/mobile acceptance tests pass, 25 unit tests pass, lint passes. Root and /demo render anonymously with zero external requests.
+
+
+## Employee demo platform expansion — 2026-11-03
+
+- [x] Inspect existing offline chat and preserve it within the same demo component; keep real-service code and database files untouched.
+- [x] Add shared fictional department catalog, seven department details, and department source documents; reserved .invalid contacts only.
+- [x] Add home/company introduction, onboarding guide, policy procedures, document list/detail and dedicated MASAR AI navigation under /demo; no auth or external APIs.
+- [x] Link assistant evidence to original document pages and mentioned departments; preserve per-chat state across client-side platform navigation.
+- [x] Verify 27 unit tests, ESLint, TypeScript/production build and Prettier.
+- [x] Verify all 29 valid direct/deep routes plus 4 missing-page cases, cross-page source links, chat context after navigation and desktop/mobile accessibility/overflow on actual production frontend: all 4 browser scenarios pass; zero external requests/page errors.
+- [~] Record verified delivery and publish feature-branch changes after acceptance.

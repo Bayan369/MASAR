@@ -52,3 +52,23 @@ describe("isolated mock conversation", () => {
     }
   });
 });
+
+describe("connected platform sources", () => {
+  it("answers department questions from the same documents as the directory", () => {
+    const answer = respond("ما مهام قسم المالية؟", { step: 0 });
+    expect(answer.status).toBe("verified");
+    expect(answer.sources[0].documentId).toBe("department-finance");
+    const source = knowledge.find(
+      (d) => d.id === answer.sources[0].documentId,
+    )!;
+    expect(source.steps).toContain(answer.sources[0].quote);
+  });
+  it("does not mistake an English substring for a department or invent a payroll answer", () => {
+    expect(respond("what is equality?", { step: 0 }).status).toBe(
+      "unavailable",
+    );
+    expect(respond("كم راتبي في المالية؟", { step: 0 }).status).toBe(
+      "unavailable",
+    );
+  });
+});

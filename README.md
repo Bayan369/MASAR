@@ -118,10 +118,10 @@ npm ci
 npm run dev -- --host 127.0.0.1
 ```
 
-Open **http://127.0.0.1:5173/demo** (or use the demo link on Login).
+Open **http://127.0.0.1:5173/demo** for the employee platform; `/` opens the same home. MASAR AI is at `/demo/assistant`. No login is needed.
 No Backend, credentials, Supabase, Cloudflare, SQL or hosted setup is required.
 The separate `/demo` route does not mount the authenticated workspace; existing real
-login, upload, RAG and database paths remain unchanged.
+login, upload, RAG and database code is preserved. The demo home is now the default entry.
 
 All company information and procedures on this route are **fictional Mock Data**,
 explicitly marked in the UI. This is a deterministic local conversation engine,
@@ -139,3 +139,18 @@ confidential information in this demo. No fake authentication is performed.
 Validation: `npm test`, `npm run lint`, `npm run build`, `npm run test:demo`.
 The last command builds and serves the actual production frontend on port5175 and runs desktop/mobile
 browser checks, including zero external requests and accessibility checks.
+
+
+### Employee platform demo pages
+
+- `/demo`: welcome, fictional company introduction and service shortcuts.
+- `/demo/departments` and `/demo/departments/:id`: seven department cards, responsibilities, services, when to contact and clearly fictional `.invalid` addresses.
+- `/demo/onboarding`: first day, equipment and basic orientation steps.
+- `/demo/policies` and `/demo/policies/:id`: leave, IT support and VPN procedures.
+- `/demo/documents` and `/demo/documents/:id`: local source text and explicit demo-ready status; no upload or processing is claimed.
+- `/demo/assistant`: existing contextual chat, with department and original-document links.
+
+All content shares the same local knowledge catalog. Client-side navigation preserves
+chat state; refreshing still clears it. `npm run test:demo` checks direct routes,
+source links, chat continuity, unknown pages, desktop/mobile accessibility and
+absence of external requests against the actual built frontend on port5175.

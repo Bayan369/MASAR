@@ -2,7 +2,14 @@ import Demo from "./demo/Demo";
 import { AuthProvider, RequireAuth, useAuth } from "./auth/AuthProvider";
 import Recovery from "./pages/Recovery";
 import { useEffect, useRef, useState } from "react";
-import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
+import {
+  Link,
+  NavLink,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import {
   Menu,
   X,
@@ -241,8 +248,8 @@ function AuthenticatedApp() {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Demo />} />
-      <Route path="/demo" element={<Demo />} />
+      <Route path="/" element={<Navigate to="/demo" replace />} />
+      <Route path="/demo/*" element={<Demo />} />
       <Route path="*" element={<AuthenticatedApp />} />
     </Routes>
   );

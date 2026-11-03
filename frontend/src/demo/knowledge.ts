@@ -1,3 +1,4 @@
+import { departmentDocuments } from "./catalog";
 /** Explicitly fictional data for the isolated, offline demo. Never company policy. */
 export const knowledge = [
   {
@@ -6,7 +7,7 @@ export const knowledge = [
     terms: ["الشركة", "شركتكم", "company"],
     steps: [
       "شركة مسار التجريبية مثال تعليمي لتجربة مساعد الموظف؛ ليست جهة عمل حقيقية.",
-      "الأقسام في هذا المثال هي الموارد البشرية (HR)، وتقنية المعلومات (IT)، والعمليات (Operations).",
+      "الأقسام في هذا المثال هي الموارد البشرية (HR)، وتقنية المعلومات (IT)، والمالية (Finance)، والإدارة (Administration)، والتسويق (Marketing)، وضمان الجودة (QA)، والعمليات (Operations).",
     ],
   },
   {
@@ -58,13 +59,14 @@ export const knowledge = [
       "للاستفسار عن مهمة، ابدأ بمديرك المباشر. لا توجد عناوين بريد أو أرقام اتصال منشورة في البيانات التجريبية.",
     ],
   },
+  ...departmentDocuments,
 ] as const;
 export type Topic = (typeof knowledge)[number]["id"];
 export type Context = { topic?: Topic; step: number };
 export type Reply = {
   text: string;
   status: "verified" | "uncertain" | "unavailable";
-  sources: { title: string; quote: string }[];
+  sources: { title: string; quote: string; documentId?: string }[];
   context: Context;
 };
 export const statusLabels = {
@@ -94,7 +96,18 @@ export function respond(question: string, context: Context): Reply {
     /^(وش تقصد|ايش تقصد|وضح|وضح اكثر|ما المقصود|what do you mean|explain)[؟?!.\s]*$/.test(
       q,
     );
-  const matches = knowledge.filter((d) => d.terms.some((t) => q.includes(t)));
+  const termMatches = (term: string) => {
+    const normalized = normalize(term);
+    return /^[a-z ]+$/.test(normalized)
+      ? new RegExp(`\\b${normalized}\\b`).test(q)
+      : q.includes(normalized);
+  };
+  const departmentMatches = departmentDocuments.filter((d) =>
+    d.terms.some(termMatches),
+  );
+  const matches = departmentMatches.length
+    ? departmentMatches
+    : knowledge.filter((d) => d.terms.some(termMatches));
   if ((follow || explain) && !context.topic)
     return reply(
       "عن أي إجراء تقصد؟ يمكننا الحديث عن البداية، الإجازة أو إعداد VPN.",
@@ -152,7 +165,7 @@ export function respond(question: string, context: Context): Reply {
   return {
     text: `${explain ? "المقصود بالخطوة السابقة، بحسب نص الدليل: " : ""}${quote}${step < doc.steps.length - 1 ? " هل تريد معرفة الخطوة التالية؟" : " هل لديك سؤال عن إجراء آخر؟"}`,
     status: "verified",
-    sources: [{ title: doc.title, quote }],
+    sources: [{ title: doc.title, quote, documentId: doc.id }],
     context: { topic: doc.id, step },
   };
 }
