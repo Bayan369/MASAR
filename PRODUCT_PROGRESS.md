@@ -109,4 +109,4 @@ acceptance blockers remain; offline demo success does not satisfy live Llama acc
 - [x] Link assistant evidence to original document pages and mentioned departments; preserve per-chat state across client-side platform navigation.
 - [x] Verify 27 unit tests, ESLint, TypeScript/production build and Prettier.
 - [x] Verify all 29 valid direct/deep routes plus 4 missing-page cases, cross-page source links, chat context after navigation and desktop/mobile accessibility/overflow on actual production frontend: all 4 browser scenarios pass; zero external requests/page errors.
-- [~] Record verified delivery and publish feature-branch changes after acceptance.
+- [x] Publish verified feature implementation 772f759 to origin/feat/phase-1-foundation; live remote hash verified equal and working tree clean. No main merge, hosted SQL or public deployment.
