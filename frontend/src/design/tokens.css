@@ -1,0 +1,48 @@
+/* MASAR: warm neutral surfaces, deep pine, and a restrained brass accent. */
+:root {
+  --font-sans: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
+  --canvas: #fafbf9;
+  --surface: #ffffff;
+  --surface-muted: #f0f3ef;
+  --ink: #182d29;
+  --muted: #5c6c65;
+  --brand: #205d4d;
+  --brand-hover: #174838;
+  --soft: #e9f2eb;
+  --accent: #896126;
+  --border: #dfe6df;
+  --nav: #152f2a;
+  --nav-text: #c8d8d0;
+  --error: #9d3b32;
+  --warning: #805818;
+  --focus: #4b8266;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 16px;
+  --shadow: 0 4px 16px #16342808;
+  --text-micro: 10px;
+  --text-caption: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-small: 14px;
+  --text-base: 15px;
+  --text-medium: 16px;
+  --text-lg: 18px;
+  --text-section: 20px;
+  --text-xl: 22px;
+  --text-subtitle: 24px;
+  --text-display: 32px;
+  --text-title: clamp(26px, 2.3vw, 34px);
+  --page-gutter: clamp(20px, 3.5vw, 64px);
+  --sidebar-width: 232px;
+}

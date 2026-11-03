@@ -7,8 +7,6 @@ import {
   Compass,
   FileText,
   Sparkles,
-  Search,
-  X,
   ChevronLeft,
   ArrowRight,
   Mail,
@@ -19,55 +17,10 @@ import {
 } from "lucide-react";
 import { departments } from "./catalog";
 import { knowledge } from "./knowledge";
+import { EmptySearch, SearchField } from "../design/Primitives";
+import { Icon } from "../components/ui";
 const clean = (s: string) =>
   s.toLowerCase().replace(/[أإآ]/g, "ا").replace(/[ً-ٟ]/g, "");
-function SearchField({
-  value,
-  onChange,
-  label,
-  placeholder,
-}: {
-  value: string;
-  onChange: (s: string) => void;
-  label: string;
-  placeholder: string;
-}) {
-  return (
-    <div className="platform-search">
-      <Search size={18} aria-hidden="true" />
-      <input
-        aria-label={label}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        dir="auto"
-      />
-      {value && (
-        <button
-          className="platform-icon-button"
-          aria-label="مسح البحث"
-          onClick={() => onChange("")}
-        >
-          <X size={16} />
-        </button>
-      )}
-    </div>
-  );
-}
-function EmptySearch({ onClear }: { onClear: () => void }) {
-  return (
-    <section className="platform-empty" role="status">
-      <span className="platform-empty-icon">
-        <Search size={27} />
-      </span>
-      <h2>لم نجد نتائج مطابقة</h2>
-      <p>جرّب اسمًا أو كلمة أخرى، أو اعرض القائمة كاملة.</p>
-      <button className="platform-button secondary" onClick={onClear}>
-        مسح البحث
-      </button>
-    </section>
-  );
-}
 export function Missing() {
   return (
     <section className="platform-empty">
@@ -278,7 +231,13 @@ export function DepartmentsPage() {
               to={`/departments/${d.id}`}
             >
               <div className="platform-department-card-top">
-                <span className="platform-monogram" dir="ltr">
+                <span className="platform-monogram">
+                  <Icon
+                    name={d.id === "administration" ? "admin" : d.id}
+                    size={21}
+                  />
+                </span>
+                <span className="platform-department-term" dir="ltr">
                   {d.term}
                 </span>
                 <span className="platform-card-arrow">

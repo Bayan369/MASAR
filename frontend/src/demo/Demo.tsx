@@ -35,6 +35,7 @@ import {
   Missing,
 } from "./PlatformPages";
 import { respond, statusLabels, type Context, type Reply } from "./knowledge";
+import { PageHeader } from "../design/Primitives";
 import "./demo.css";
 type Message =
   | { role: "user"; text: string }
@@ -247,16 +248,13 @@ export default function Demo() {
         <main
           id="main-content"
           className={`demo-main ${assistantPage ? "is-assistant" : ""}`}
+          data-page={currentPage?.path}
         >
-          <div className="platform-page-heading">
-            <div>
-              <span className="platform-eyebrow">
-                {currentPage?.term || "MASAR"}
-              </span>
-              <h1 ref={heading} tabIndex={-1}>
-                {currentPage?.label || "الصفحة غير موجودة"}
-              </h1>
-            </div>
+          <PageHeader
+            title={currentPage?.label || "الصفحة غير موجودة"}
+            eyebrow={currentPage?.term || "MASAR"}
+            headingRef={heading}
+          >
             {currentPage?.path === "/" ? (
               <Link className="platform-text-link" to="/onboarding">
                 دليلك لليوم الأول
@@ -268,7 +266,7 @@ export default function Demo() {
                 <ChevronLeft size={15} />
               </Link>
             )}
-          </div>
+          </PageHeader>
           <Routes>
             <Route index element={<Home />} />
             <Route path="departments" element={<DepartmentsPage />} />
