@@ -29,7 +29,6 @@ describe("isolated mock conversation", () => {
     for (const q of [
       "كم راتبي؟",
       "كم يوم إجازة عندي؟",
-      "ما بريد الدعم؟",
       "VPN server address?",
       "ما أسعار الأسهم؟",
     ]) {
@@ -93,4 +92,48 @@ it("renders no retired demo wording in catalog, procedure steps, evidence or ass
       expect(source.quote).not.toMatch(retired);
     }
   }
+});
+
+describe("Saudi conversation", () => {
+  it("keeps procedure context through greetings and thanks", () => {
+    const first = respond("ابي اجازة من الشركة", { step: 0 });
+    expect(first.context.topic).toBe("leave");
+    const greeting = respond("هلا والله", first.context);
+    expect(greeting.status).toBe("conversational");
+    expect(respond("طيب وش بعدها؟", greeting.context).context).toEqual({
+      topic: "leave",
+      step: 1,
+    });
+    expect(respond("يعطيك العافية", greeting.context).context).toEqual(
+      first.context,
+    );
+  });
+  it("understands greetings with questions and local expressions", () => {
+    expect(
+      respond("السلام عليكم، ابي افعل VPN", { step: 0 }).context.topic,
+    ).toBe("vpn");
+    expect(
+      respond("اللابتوب ما يشتغل وش اسوي؟", { step: 0 }).context.topic,
+    ).toBe("it");
+    expect(respond("توني متوظف وش اسوي؟", { step: 0 }).context.topic).toBe(
+      "onboarding",
+    );
+    expect(respond("هلا وش مهام المالية؟", { step: 0 }).text).toContain(
+      "المسؤوليات",
+    );
+  });
+  it("uses catalog contacts and resumes the same procedure", () => {
+    const first = respond("كيف اطلب اجازة؟", { step: 0 });
+    const contact = respond("طيب مين اكلم؟", first.context);
+    expect(contact.text).toContain("hr@masar-demo.invalid");
+    expect(contact.sources[0].documentId).toBe("department-hr");
+    expect(respond("وبعدين؟", contact.context).context).toEqual({
+      topic: "leave",
+      step: 1,
+    });
+  });
+  it("clarifies multiple procedures and rejects undocumented personal facts", () => {
+    expect(respond("ابي اجازة وVPN", { step: 0 }).status).toBe("uncertain");
+    expect(respond("كم رصيد اجازتي؟", { step: 0 }).status).toBe("unavailable");
+  });
 });

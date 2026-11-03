@@ -2511,3 +2511,66 @@
     transform: none;
   }
 }
+
+/* Consistent surfaces and a readable conversation workspace. */
+.platform-chat {
+  box-shadow: 0 12px 40px #173e2f08;
+  overflow: hidden;
+}
+.platform-chat-content {
+  min-width: 0;
+  background: #fcfdfb;
+}
+.platform-chat-heading {
+  background: #fff;
+  border-bottom: 1px solid #e6eae3;
+}
+.demo-message > p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 2;
+}
+.demo-message.assistant {
+  width: 100%;
+  max-width: 760px;
+  background: #fff;
+  border: 1px solid #e3eae2;
+  border-radius: 18px;
+  padding: 20px;
+}
+.demo-status.conversational {
+  background: #edf3ec;
+  color: #365b43;
+}
+.demo-message-heading {
+  flex-wrap: wrap;
+}
+.demo-composer textarea {
+  line-height: 1.8;
+  max-height: 180px;
+}
+.demo-composer:focus-within {
+  box-shadow: 0 -3px 18px #174d3e0a;
+}
+.platform-department-card,
+.platform-link-card,
+.platform-reading {
+  border-radius: 18px;
+}
+.platform-chat-suggestions button:hover {
+  background: #edf4e9;
+  border-color: #b5cbb0;
+}
+@media (max-width: 700px) {
+  .demo-message.assistant {
+    padding: 15px;
+    border-radius: 14px;
+  }
+  .demo-message > p,
+  .demo-composer textarea {
+    font-size: 14px;
+  }
+  .platform-chat-heading p {
+    font-size: 11px;
+  }
+}

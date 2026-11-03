@@ -65,11 +65,12 @@ export type Topic = (typeof knowledge)[number]["id"];
 export type Context = { topic?: Topic; step: number };
 export type Reply = {
   text: string;
-  status: "verified" | "uncertain" | "unavailable";
+  status: "verified" | "uncertain" | "unavailable" | "conversational";
   sources: { title: string; quote: string; documentId?: string }[];
   context: Context;
 };
 export const statusLabels = {
+  conversational: "معك مسار",
   verified: "إجابة موثقة",
   uncertain: "إجابة غير مؤكدة — يلزم توضيح",
   unavailable: "معلومة غير متوفرة",
@@ -79,7 +80,9 @@ const normalize = (s: string) =>
     .trim()
     .toLowerCase()
     .normalize("NFKC")
-    .replace(/[أإآ]/g, "ا")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ـ/g, "")
     .replace(/[ً-ٟ]/g, "");
 export function respond(question: string, context: Context): Reply {
   const q = normalize(question);
@@ -88,26 +91,70 @@ export function respond(question: string, context: Context): Reply {
     status: Reply["status"],
     next = context,
   ): Reply => ({ text, status, sources: [], context: next });
+  // Strip a greeting only at the start; a greeting plus a question still answers it.
+  const greeting =
+    /^(?:السلام عليكم(?: ورحمة الله(?: وبركاته)?)?|وعليكم السلام|مرحبا|اهلا(?: وسهلا)?|هلا(?: والله)?|يا هلا|صباح الخير|مساء الخير|hello|hi)(?=$|[،,!؟?.\s])/;
+  const query = q.replace(greeting, "").replace(/^[،,!؟?.\s]+/, "");
   const follow =
-    /^(طيب\s*)?(و?بعدها|بعدين|ثم|what next|and then|نعم|ايه|ايوه|yes)[؟?!.\s]*$/.test(
-      q,
+    /^(?:(?:طيب|تمام|زين)\s*)?(?:و?بعدها|و?بعدين|ثم|وش بعدها|ايش بعدها|وش الخطوه التاليه|وش الخطوة التالية|كمل|كمل الخطوات|what next|and then|نعم|ايه|ايوه|yes)[؟?!.\s]*$/.test(
+      query,
     );
   const explain =
-    /^(وش تقصد|ايش تقصد|وضح|وضح اكثر|ما المقصود|what do you mean|explain)[؟?!.\s]*$/.test(
-      q,
+    /^(?:(?:طيب)\s*)?(?:وش تقصد|ايش تقصد|وضح|وضح اكثر|ما المقصود|what do you mean|explain)[؟?!.\s]*$/.test(
+      query,
     );
+  const contact =
+    /مين اكلم|من اكلم|مع مين اتواصل|كيف اتواصل|جهة التواصل|بريد|email|contact/.test(
+      query,
+    );
+  const responsibilities = /مهام|مسؤول|مسئول|يسوي|يسوون|خدمات/.test(query);
   const termMatches = (term: string) => {
     const normalized = normalize(term);
     return /^[a-z ]+$/.test(normalized)
-      ? new RegExp(`\\b${normalized}\\b`).test(q)
-      : q.includes(normalized);
+      ? new RegExp(`\\b${normalized}\\b`).test(query)
+      : query.includes(normalized);
   };
+  const aliases: Record<string, RegExp> = {
+    onboarding: /اول يوم|موظف جديد|توني متوظف|توني بادي|وش اسوي اول|ابدا دوامي/,
+    leave: /اجاز|عطله|عطلة|leave|vacation/,
+    it: /تقني|جهاز|لابتوب|كمبيوتر|حاسوب|دعم|خربان|ما يشتغل/,
+    vpn: /vpn|شبكه افتراضيه|شبكة افتراضية|الشبكة الافتراضية/,
+    communication: /الاقسام|اقسام الشركه|اقسام الشركة/,
+  };
+  const procedural = knowledge.filter(
+    (d) =>
+      !d.id.startsWith("department-") &&
+      (aliases[d.id]?.test(query) || d.terms.some(termMatches)),
+  );
   const departmentMatches = departmentDocuments.filter((d) =>
     d.terms.some(termMatches),
   );
-  const matches = departmentMatches.length
-    ? departmentMatches
-    : knowledge.filter((d) => d.terms.some(termMatches));
+  // Specific procedures outrank generic words such as company or department.
+  const specific = procedural.filter(
+    (d) => !["company", "communication"].includes(d.id),
+  );
+  const matches =
+    departmentMatches.length && !/اجاز|vpn|اول يوم|موظف جديد|توني/.test(query)
+      ? departmentMatches
+      : specific.length
+        ? specific
+        : departmentMatches.length
+          ? departmentMatches
+          : procedural;
+  if (!query && greeting.test(q))
+    return reply(
+      "وعليكم السلام وأهلًا بك! أنا مسار، أساعدك في إجراءات البداية والإجازات والأقسام والدعم التقني. وش حاب تعرف؟",
+      "conversational",
+    );
+  if (
+    /^(شكرا|شكراً|يعطيك العافيه|يعطيك العافية|مشكور|تسلم|thanks)[؟?!.\s]*$/.test(
+      query,
+    )
+  )
+    return reply(
+      "العفو، حياك الله! إذا حاب نكمل الإجراء قل: وبعدها؟ أو اسأل عن موضوع آخر.",
+      "conversational",
+    );
   if ((follow || explain) && !context.topic)
     return reply(
       "عن أي إجراء تقصد؟ يمكننا الحديث عن البداية، الإجازة أو إعداد VPN.",
@@ -116,31 +163,27 @@ export function respond(question: string, context: Context): Reply {
   if (
     !follow &&
     !explain &&
-    /^(مرحبا|اهلا|السلام عليكم|hello|hi)[!؟?.\s]*$/.test(q)
+    (matches.length > 1 || /^(ساعدني|عندي مشكلة|help)[؟?!.\s]*$/.test(query))
   )
     return reply(
-      "أهلًا بك في مسار! هل تحتاج مساعدة في أول يوم، الإجازات أو الدعم التقني؟",
+      `حتى أوجّهك بدقة، هل تقصد ${matches.length ? matches.map((d) => d.title).join(" أم ") : "إجراءات الموظف الجديد، الإجازات، أم الدعم التقني"}؟`,
       "uncertain",
-      { step: 0 },
     );
-  if (
-    !follow &&
-    !explain &&
-    (matches.length > 1 || /^(ساعدني|عندي مشكلة|help)[؟?!.\s]*$/.test(q))
-  )
-    return reply(
-      "حتى أوجّهك بدقة، هل تقصد إجراءات الموظف الجديد، الإجازات، أم الدعم التقني؟ حدّد موضوعًا واحدًا.",
-      "uncertain",
-      { step: 0 },
-    );
+  // Contextual questions resolve to the current topic only when explicitly referring back.
+  const contextual =
+    !!context.topic &&
+    !matches.length &&
+    (contact ||
+      responsibilities ||
+      /عنها|عنه|هذا الاجراء|هالاجراء/.test(query));
   // Requests for missing details must never inherit an earlier answer's evidence.
   if (
     !follow &&
     !explain &&
-    (/راتب|رواتب|salary|payroll|رصيد|كم يوم|عدد ايام|balance|how many|هاتف|رقم|بريد|email|server address|عنوان الخادم|اسم العميل/.test(
+    (/راتب|رواتب|salary|payroll|رصيد|كم يوم|عدد ايام|balance|how many|هاتف|رقم|server address|عنوان الخادم|اسم العميل/.test(
       q,
     ) ||
-      !matches.length)
+      (!matches.length && !contextual))
   )
     return reply(
       "لا تتوفر هذه المعلومة في قاعدة المعرفة، ولا أستطيع تأكيدها. يمكنك سؤال الموارد البشرية (HR) عن الجهة المناسبة؛ هذا اقتراح غير مؤكد لسؤالك، وليس إحالة موثقة.",
@@ -148,8 +191,36 @@ export function respond(question: string, context: Context): Reply {
       { step: 0 },
     );
   const doc = knowledge.find(
-    (d) => d.id === (follow || explain ? context.topic : matches[0].id),
+    (d) =>
+      d.id ===
+      (follow || explain || contextual ? context.topic : matches[0].id),
   )!;
+  const relatedDepartment = doc.id.startsWith("department-")
+    ? doc
+    : departmentDocuments.find(
+        (d) =>
+          d.id ===
+          (doc.id === "leave" || doc.id === "onboarding"
+            ? "department-hr"
+            : doc.id === "vpn" || doc.id === "it"
+              ? "department-it"
+              : ""),
+      );
+  if ((contact || responsibilities) && relatedDepartment) {
+    const quote = relatedDepartment.steps[contact ? 2 : 1]!;
+    return {
+      text: quote,
+      status: "verified",
+      sources: [
+        {
+          title: relatedDepartment.title,
+          quote,
+          documentId: relatedDepartment.id,
+        },
+      ],
+      context: { topic: doc.id, step: contextual ? context.step : 0 },
+    };
+  }
   const step = follow
     ? Math.min(context.step + 1, doc.steps.length)
     : explain

@@ -305,3 +305,26 @@ test("keyboard navigation, responsive menu, suggested question and multiline inp
   ).toBeVisible();
   await assertClean(page);
 });
+
+test("Saudi greeting, procedure, contextual contact and next step", async ({
+  page,
+}) => {
+  const observed = observe(page);
+  await page.goto("/assistant");
+  const log = page.getByRole("log");
+  await send(page, "هلا والله");
+  await expect(log.locator(".assistant").last()).toContainText("أهلًا بك");
+  await send(page, "ابي اجازة من الشركة");
+  await expect(log.locator(".assistant").last()).toContainText("حدّد تواريخ");
+  await send(page, "طيب مين اكلم؟");
+  await expect(log.locator(".assistant").last()).toContainText(
+    "hr@masar-demo.invalid",
+  );
+  await send(page, "طيب وش بعدها؟");
+  await expect(log.locator(".assistant").last()).toContainText(
+    "بعد موافقة المدير",
+  );
+  await assertClean(page);
+  expect(observed.external).toEqual([]);
+  expect(observed.errors).toEqual([]);
+});
