@@ -84,8 +84,10 @@ export default function Demo() {
     [],
   );
   useEffect(() => {
-    bottom.current?.scrollIntoView({ block: "nearest" });
-  }, [chat.messages.length, typing, selected]);
+    const messages = bottom.current?.parentElement;
+    if (messages)
+      messages.scrollTop = chat.messages.length ? messages.scrollHeight : 0;
+  }, [chat.messages.length, typing, selected, assistantPage]);
   useEffect(() => {
     if (previousPath.current !== location.pathname) {
       previousPath.current = location.pathname;
@@ -151,7 +153,10 @@ export default function Demo() {
     }, 450);
   }
   return (
-    <div className="demo-shell" dir="rtl">
+    <div
+      className={`demo-shell ${assistantPage ? "assistant-workspace" : ""}`}
+      dir="rtl"
+    >
       <a className="skip-link" href="#main-content">
         انتقل إلى المحتوى
       </a>

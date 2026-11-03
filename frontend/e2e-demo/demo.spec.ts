@@ -54,7 +54,7 @@ test("contextual chat, exact sources, cross-page context and independent history
   await page.goto("/assistant");
   const log = page.getByRole("log");
   expect(await log.evaluate((el) => getComputedStyle(el).overflowY)).toBe(
-    "visible",
+    "auto",
   );
   await expect(
     page.getByRole("heading", { level: 1, name: "اسأل مسار" }),
@@ -330,4 +330,71 @@ test("Saudi greeting, procedure, contextual contact and next step", async ({
   await assertClean(page);
   expect(observed.external).toEqual([]);
   expect(observed.errors).toEqual([]);
+});
+
+test("assistant viewport, welcome suggestions and fixed composer", async ({
+  page,
+}, info) => {
+  await page.goto("/assistant");
+  const log = page.getByRole("log");
+  const composer = page.locator(".demo-composer");
+  const suggestions = page.locator(".platform-chat-suggestions");
+  await expect(suggestions.getByRole("button")).toHaveCount(3);
+  for (const button of await suggestions.getByRole("button").all()) {
+    await expect(button).toBeInViewport();
+  }
+  const initial = await page.evaluate(() => {
+    const welcome = document
+      .querySelector(".demo-welcome > p")!
+      .getBoundingClientRect();
+    const suggestions = document
+      .querySelector(".platform-chat-suggestions")!
+      .getBoundingClientRect();
+    const composer = document
+      .querySelector(".demo-composer")!
+      .getBoundingClientRect();
+    return {
+      order:
+        welcome.bottom <= suggestions.top && suggestions.bottom <= composer.top,
+      fits: document.documentElement.scrollHeight <= innerHeight + 1,
+      horizontal: document.documentElement.scrollWidth <= innerWidth,
+    };
+  });
+  expect(initial).toEqual({ order: true, fits: true, horizontal: true });
+  await page.screenshot({
+    path: info.outputPath("welcome.png"),
+    fullPage: true,
+  });
+  const composerBefore = (await composer.boundingBox())!;
+  await send(page, "كيف أبدأ أول يوم؟");
+  await expect(suggestions).toHaveCount(0);
+  for (const question of [
+    "طيب وبعدها؟",
+    "وش تقصد؟",
+    "كيف أطلب إجازة؟",
+    "طيب وبعدها؟",
+    "وش تقصد؟",
+  ]) {
+    await send(page, question);
+  }
+  await expect(log.locator(".demo-message").last()).toBeInViewport();
+  const composerAfter = (await composer.boundingBox())!;
+  expect(Math.abs(composerBefore.y - composerAfter.y)).toBeLessThan(2);
+  expect(Math.abs(composerBefore.height - composerAfter.height)).toBeLessThan(
+    2,
+  );
+  expect(await log.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(
+    true,
+  );
+  expect(
+    await page.evaluate(
+      () =>
+        document.documentElement.scrollHeight <= innerHeight + 1 &&
+        window.scrollY === 0,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: info.outputPath("conversation.png"),
+    fullPage: true,
+  });
 });

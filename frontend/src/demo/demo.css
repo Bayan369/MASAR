@@ -2575,27 +2575,57 @@
   }
 }
 
-/* The conversation is part of the page, with one vertical document scroll. */
+/* Assistant-only viewport layout: messages own the vertical scroll. */
+.assistant-workspace {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+.assistant-workspace .platform-body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.assistant-workspace .platform-topbar,
+.assistant-workspace .platform-mobile-bar {
+  flex-shrink: 0;
+}
+.assistant-workspace .platform-footer {
+  display: none;
+}
 .demo-main.is-assistant {
   max-width: 1160px;
-  padding-bottom: 0;
+  padding: 18px 32px 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.is-assistant .platform-page-heading {
+  margin-bottom: 14px;
+  flex-shrink: 0;
+}
+.is-assistant .platform-page-heading .platform-eyebrow {
+  display: none;
 }
 .is-assistant .platform-chat {
   display: flex;
   flex-direction: column;
+  flex: 1;
   min-height: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  overflow: visible;
+  overflow: hidden;
 }
 .is-assistant .demo-chat-history {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
   gap: 12px;
-  padding: 0 0 16px;
+  padding: 0 0 12px;
   border: 0;
   border-bottom: 1px solid var(--border);
   background: transparent;
@@ -2611,50 +2641,135 @@
 }
 .is-assistant .demo-chat-history nav {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   flex: 1;
   gap: 6px;
-  overflow: visible;
+  overflow-x: auto;
   min-width: 0;
 }
 .is-assistant .demo-chat-history nav button {
+  flex-shrink: 0;
   min-width: 0;
   width: auto;
-  max-width: 220px;
-  max-height: none;
+  max-width: 180px;
+  max-height: 42px;
   align-items: center;
 }
 .is-assistant .platform-chat-content {
   background: transparent;
+  flex: 1;
+  min-height: 0;
 }
 .is-assistant .demo-messages {
   height: auto;
-  min-height: min(420px, 50dvh);
-  overflow: visible;
-  overscroll-behavior: auto;
-  scrollbar-gutter: auto;
-  padding: 28px 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding: 20px 8px;
 }
 .is-assistant .demo-welcome {
-  padding: 20px 0;
+  padding: 8px 0;
+  gap: 9px;
+  flex-shrink: 0;
+}
+.is-assistant .platform-welcome-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+}
+.is-assistant .demo-welcome h2 {
+  font-size: 25px;
+}
+.is-assistant .demo-welcome p {
+  font-size: 12px;
+}
+.is-assistant .platform-chat-suggestions {
+  width: 100%;
+  max-width: 640px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.is-assistant .platform-chat-suggestions button {
+  padding: 10px;
+  font-size: 11px;
 }
 .is-assistant .demo-composer {
   position: static;
-  bottom: 0;
-  z-index: 5;
-  padding: 16px 0 max(16px, env(safe-area-inset-bottom));
+  flex-shrink: 0;
+  padding: 12px 0 max(12px, env(safe-area-inset-bottom));
   border: 0;
+  border-top: 1px solid var(--border);
   background: var(--canvas);
 }
 @media (max-width: 760px) {
+  .assistant-workspace .demo-sidebar.is-open {
+    position: absolute;
+    top: 64px;
+    inset-inline: 0;
+    z-index: 29;
+    max-height: calc(100dvh - 64px);
+    overflow-y: auto;
+  }
+  .demo-main.is-assistant {
+    padding: 12px 16px 0;
+  }
+  .is-assistant .platform-page-heading {
+    margin-bottom: 10px;
+  }
+  .is-assistant .platform-page-heading h1 {
+    font-size: 23px;
+  }
+  .is-assistant .demo-chat-history {
+    gap: 8px;
+    padding-bottom: 8px;
+  }
   .is-assistant .demo-chat-history nav button {
-    max-width: 150px;
+    max-width: 130px;
   }
   .is-assistant .demo-messages {
-    padding-block: 22px;
-    min-height: 0;
+    padding: 14px 0;
+    gap: 16px;
   }
   .is-assistant .demo-welcome h2 {
     font-size: 22px;
+  }
+  .is-assistant .platform-chat-suggestions {
+    grid-template-columns: 1fr;
+  }
+  .is-assistant .demo-composer textarea {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 760px) and (max-height: 720px) {
+  .is-assistant .demo-welcome {
+    gap: 6px;
+    padding-block: 0;
+  }
+  .is-assistant .platform-welcome-icon {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+  }
+  .is-assistant .platform-welcome-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .is-assistant .demo-welcome .platform-eyebrow {
+    display: none;
+  }
+  .is-assistant .demo-welcome p {
+    font-size: 11px;
+  }
+  .is-assistant .platform-chat-suggestions {
+    margin-top: 4px;
+    gap: 6px;
+  }
+  .is-assistant .platform-chat-suggestions button {
+    padding: 8px 10px;
   }
 }
