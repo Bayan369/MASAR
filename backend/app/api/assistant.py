@@ -1,16 +1,26 @@
+from typing import Literal
+
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from app.services.assistant import Answer, answer_question
+from app.services.assistant import Answer
+from app.services.demo_conversation import answer_demo_question
 from app.services.cloudflare import AIUnavailable
 from app.services.retrieval import passages
 
 router = APIRouter(prefix="/api/v1", tags=["المساعد التجريبي"])
 
 
+class Turn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    role: Literal["user", "assistant"]
+    content: str = Field(min_length=1, max_length=2000)
+
+
 class Question(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=3, max_length=2000)
+    history: list[Turn] = Field(default_factory=list, max_length=10)
 
     @field_validator("question")
     @classmethod
@@ -26,7 +36,11 @@ def ask(body: Question, request: Request) -> Answer:
         with request.app.state.demo_limits.admit(
             request.client.host if request.client else "unknown"
         ):
-            return answer_question(body.question, request.app.state.ai_provider)
+            return answer_demo_question(
+                body.question,
+                request.app.state.ai_provider,
+                [turn.model_dump() for turn in body.history],
+            )
     except AIUnavailable as error:
         raise HTTPException(
             status_code=error.status, detail={"code": error.code, "message": error.message}

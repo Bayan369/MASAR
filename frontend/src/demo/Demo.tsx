@@ -144,7 +144,14 @@ export default function Demo() {
     setTyping(true);
     try {
       const result = liveDemo
-        ? await askLlama(text, chat.context)
+        ? await askLlama(
+            text,
+            chat.context,
+            chat.messages.map((message) => ({
+              role: message.role,
+              content: message.text,
+            })),
+          )
         : respond(text, chat.context);
       if (!liveDemo)
         await new Promise<void>((resolve) => {

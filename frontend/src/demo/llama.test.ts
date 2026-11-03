@@ -73,3 +73,56 @@ describe("Llama API adapter (mocked transport, not live inference)", () => {
     );
   });
 });
+
+it("forwards bounded history and preserves every backend source field", async () => {
+  const sources = [
+    {
+      id: "S1:E1",
+      document_id: "leave-policy",
+      title: "سياسة الإجازات",
+      section: "الإجازة السنوية",
+      quote: "نص المصدر من Backend",
+      excerpt: "نص المصدر من Backend",
+    },
+  ];
+  const fetch = vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        status: "answered",
+        answer: "إجابة اختبار",
+        sources,
+        generated_by: "Cloudflare Workers AI / Llama",
+        model: "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+      }),
+    ),
+  );
+  vi.stubGlobal("fetch", fetch);
+  const history = [
+    { role: "user" as const, content: "ما هي سياسة الإجازات؟" },
+    { role: "assistant" as const, content: "هل تريد معرفة الخطوة التالية؟" },
+  ];
+  const reply = await askLlama("إيه", context, history);
+  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({
+    question: "إيه",
+    history,
+  });
+  expect(reply.sources).toEqual(sources);
+});
+
+it("maps a backend greeting to conversational without claiming model provenance", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          status: "conversational",
+          answer: "أهلًا بك",
+          sources: [],
+        }),
+      ),
+    ),
+  );
+  const reply = await askLlama("هاي", context);
+  expect(reply.status).toBe("conversational");
+  expect(reply.sources).toEqual([]);
+});

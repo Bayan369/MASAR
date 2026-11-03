@@ -33,13 +33,38 @@ export default async function handler(request, response) {
     question.length > 2000
   )
     return fail(422, "اكتب سؤالًا بين 3 و2000 حرف.");
+  const history = request.body?.history;
+  if (
+    history !== undefined &&
+    (!Array.isArray(history) ||
+      history.length > 10 ||
+      history.some(
+        (turn) =>
+          !turn ||
+          !["user", "assistant"].includes(turn.role) ||
+          typeof turn.content !== "string" ||
+          !turn.content.length ||
+          turn.content.length > 2000,
+      ))
+  )
+    return fail(422, "سياق المحادثة غير صالح.");
   try {
     const upstream = await globalThis.fetch(
       new globalThis.URL("/api/v1/demo/ask", backend),
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: question.trim() }),
+        body: JSON.stringify({
+          question: question.trim(),
+          ...(history
+            ? {
+                history: history.map((turn) => ({
+                  role: turn.role,
+                  content: turn.content,
+                })),
+              }
+            : {}),
+        }),
         signal: globalThis.AbortSignal.timeout(40000),
         redirect: "error",
       },

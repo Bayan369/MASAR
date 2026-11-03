@@ -6,6 +6,7 @@ export default defineConfig({
   testDir: ".",
   testMatch: ["e2e-demo/**/*.spec.ts", "e2e-vercel/**/*.spec.ts"],
   webServer: {
+    env: { VITE_ASSISTANT_MODE: "offline" },
     command: "npm run build && node scripts/serve-vercel-build.mjs",
     url: "http://127.0.0.1:5175/assistant",
     reuseExistingServer: false,

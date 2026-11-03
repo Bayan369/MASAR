@@ -1,8 +1,18 @@
+import process from "node:process";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  server: {
+    proxy: {
+      "/api/demo/ask": {
+        target: process.env.MASAR_LOCAL_API_ORIGIN || "http://127.0.0.1:8000",
+        changeOrigin: true,
+        rewrite: () => "/api/v1/demo/ask",
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {

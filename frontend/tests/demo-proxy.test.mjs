@@ -92,3 +92,40 @@ test("rate limits preserve 429 and reject non-POST methods", async () => {
   await handler({ method: "GET" }, res);
   assert.equal(res.code, 405);
 });
+
+test("proxy forwards the same bounded conversation context", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  const history = [
+    { role: "user", content: "ما هي سياسة الإجازات؟" },
+    { role: "assistant", content: "هل تريد معرفة الخطوة التالية؟" },
+  ];
+  globalThis.fetch = async (_url, options) => {
+    assert.deepEqual(JSON.parse(options.body), { question: "إيه", history });
+    return new globalThis.Response(
+      JSON.stringify({
+        status: "not_found",
+        answer: "لا يوجد مصدر",
+        sources: [],
+      }),
+    );
+  };
+  const res = response();
+  await handler({ method: "POST", body: { question: "إيه", history } }, res);
+  assert.equal(res.code, 200);
+});
+
+test("proxy rejects overlong or privileged history without remote requests", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  globalThis.fetch = () => {
+    throw new Error("Must not call network");
+  };
+  for (const history of [
+    [{ role: "system", content: "untrusted" }],
+    [{ role: "user", content: "x".repeat(2001) }],
+    Array(11).fill({ role: "user", content: "x" }),
+  ]) {
+    const res = response();
+    await handler({ method: "POST", body: { question: "إيه", history } }, res);
+    assert.equal(res.code, 422);
+  }
+});

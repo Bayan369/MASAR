@@ -66,7 +66,15 @@ export type Context = { topic?: Topic; step: number };
 export type Reply = {
   text: string;
   status: "verified" | "uncertain" | "unavailable" | "conversational";
-  sources: { title: string; quote: string; documentId?: string }[];
+  sources: {
+    title: string;
+    quote: string;
+    documentId?: string;
+    id?: string;
+    document_id?: string;
+    section?: string;
+    excerpt?: string;
+  }[];
   context: Context;
 };
 export const statusLabels = {

@@ -44,7 +44,7 @@ Use exactly **one replica and one Uvicorn process**, disable autoscaling, and do
 
 Root `frontend`, framework Vite, install `npm ci`, build `npm run build`, output `dist`. Use a Demo branch Preview deployment, not the Production target. Set for this branch/Preview scope only:
 
-- `VITE_ASSISTANT_MODE=llama`: explicit build-time opt-in. Without it the existing offline workspace remains unchanged. Never label an offline build as the live AI Demo.
+- The assistant uses the Backend API by default. `VITE_ASSISTANT_MODE=llama` remains accepted; `VITE_ASSISTANT_MODE=offline` explicitly selects the retained legacy offline showcase. Offline mode is never an error fallback and must never be labeled live AI.
 - `MASAR_DEMO_BACKEND_URL`: existing public HTTPS Backend **origin**, no credentials/path/query. This is a Vercel server-side variable, not a `VITE_` variable.
 
 The browser posts to `/api/demo/ask`. `api/demo/ask.js` forwards only the validated question to `/api/v1/demo/ask`. It forwards no Cloudflare credentials, cookies, authorization or user-supplied IP headers. The Backend URL is fixed by server configuration, with HTTPS required and redirects disabled. Responses are non-cacheable. The 60-second function maximum and 40-second proxy timeout accommodate the existing 35-second provider timeout; verify the existing Vercel plan supports these durations.
@@ -57,7 +57,7 @@ The same-origin proxy retains the current strict `connect-src 'self'` CSP. No br
 
 Demo keeps the existing 12 packaged lexical/BM25 passages under `app/demo_documents`. It does not add embeddings, alter document processing, or replace the seven departments/thirteen frontend documents. These corpora are not identical: only the packaged Backend Demo passages ground live answers. Sources appear inline with exact quotes; no incorrect links to unrelated frontend documents are manufactured. Arabic is the default answer language, with the existing explicit English-request support retained.
 
-The backend validates model JSON, evidence IDs, exact quotations and numeric claims. Valid answered responses include the Llama model/provenance. No evidence may yield a documented not-found without calling the model; this is not evidence that inference succeeded. Failed inference returns an error, never an offline answer. The live-mode UI has no local responder fallback. Local conversational history remains visible, but this existing Backend Demo endpoint accepts one question at a time and does not provide server-side conversation memory.
+The backend validates model JSON, evidence IDs, exact quotations and numeric claims. Valid answered responses include the Llama model/provenance. No evidence may yield a documented not-found without calling the model; this is not evidence that inference succeeded. Failed inference returns an error, never an offline answer. The live-mode UI has no local responder fallback. The frontend sends the most recent ten user/assistant turns (up to 2000 characters per turn) to the same Demo endpoint. The backend uses prior user questions to retrieve evidence for short confirmations and passes history as untrusted context, never as an evidence source. There is no server-side conversation storage. Pure greetings receive a clearly conversational, source-free social response without invoking or claiming Llama.
 
 ## Trial limitations
 
@@ -79,8 +79,15 @@ npm test
 npm run test:proxy
 npm run test:vercel
 npm run test:public-demo
+npm run test:local-api
 ```
 
 Public-Demo browser tests mock the API and verify actual live-mode UI wiring, sources, failure rendering and absence of offline fallback. Backend tests mock Cloudflare and verify RAG evidence, isolation, CORS, rate/concurrency limits and port handling. **These tests do not prove live Cloudflare connectivity.**
 
 After the existing service credentials and Preview deployment are available, ask `كم مدة الإجازة السنوية؟` from the published UI. Check the browser POST succeeds, response has `status=answered`, the configured `model`, `generated_by=Cloudflare Workers AI / Llama`, exact sources, and correlate with a `workers_ai_success` Backend log. Never share token-bearing requests or environment dumps. Record the actual Preview URL and commit only after successful deployment; no URL is invented here.
+
+## Local frontend/API parity
+
+Run the existing Backend with Demo enabled and the actual Cloudflare settings, then run `npm run dev` in `frontend`. Vite forwards `/api/demo/ask` to `http://127.0.0.1:8000/api/v1/demo/ask` without Vercel. Set the server-only `MASAR_LOCAL_API_ORIGIN` process variable for a different local API port. The same endpoint and 12 Backend RAG passages power both direct API and UI questions; UI document summaries are not an alternative answer source. Source IDs, document IDs, titles, sections, excerpts and quotes are retained from the API response without manufacturing links to unrelated frontend documents.
+
+`test:local-api` starts actual local FastAPI and Vite processes with no model credentials. It verifies greeting delivery and that factual questions fail explicitly when AI is unavailable; it does not simulate a successful inference. `test:public-demo` separately uses declared API fixtures to check source rendering and context forwarding. Neither proves a live Cloudflare answer.

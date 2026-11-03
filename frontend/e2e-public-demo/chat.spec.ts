@@ -52,3 +52,75 @@ test("live mode uses API sources and shows errors without offline fallback (mock
   await expect(page.locator(".demo-message.assistant")).toHaveCount(1);
   expect(calls).toBe(2);
 });
+
+test("greeting, backend policy source and affirmative share the same API conversation (contract fixture)", async ({
+  page,
+}) => {
+  const quote = "مصدر سياسة الإجازات من Backend للاختبار";
+  let step = 0;
+  await page.route("**/api/demo/ask", async (route) => {
+    const body = route.request().postDataJSON();
+    if (step === 0) {
+      expect(body.question).toBe("هاي");
+      await route.fulfill({
+        json: {
+          status: "conversational",
+          answer: "أهلًا بك، كيف أساعدك؟",
+          sources: [],
+        },
+      });
+    } else {
+      if (step === 1) expect(body.question).toBe("ما هي سياسة الإجازات؟");
+      else {
+        expect(body.question).toBe("إيه");
+        expect(body.history.at(-1).content).toContain(
+          "هل تريد معرفة الخطوة التالية؟",
+        );
+        expect(
+          body.history.some(
+            (turn: { content: string }) =>
+              turn.content === "ما هي سياسة الإجازات؟",
+          ),
+        ).toBe(true);
+      }
+      await route.fulfill({
+        json: {
+          status: "answered",
+          answer:
+            step === 1
+              ? "إجابة السياسة من API. هل تريد معرفة الخطوة التالية؟"
+              : "متابعة موثقة من API",
+          sources: [
+            {
+              id: "S1:E1",
+              document_id: "leave-policy",
+              title: "سياسة الإجازات",
+              quote,
+              section: "الإجازة السنوية",
+              excerpt: quote,
+            },
+          ],
+          generated_by: "Cloudflare Workers AI / Llama",
+          model: "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        },
+      });
+    }
+    step++;
+  });
+  await page.goto("/assistant");
+  for (const [question, answer] of [
+    ["هاي", "أهلًا بك، كيف أساعدك؟"],
+    [
+      "ما هي سياسة الإجازات؟",
+      "إجابة السياسة من API. هل تريد معرفة الخطوة التالية؟",
+    ],
+    ["إيه", "متابعة موثقة من API"],
+  ]) {
+    await page.getByLabel("رسالتك للمساعد").fill(question);
+    await page.getByRole("button", { name: /إرسال/ }).click();
+    await expect(page.getByText(answer, { exact: true })).toBeVisible();
+  }
+  await page.getByText("المصدر: سياسة الإجازات").last().click();
+  await expect(page.getByText(quote, { exact: true }).last()).toBeVisible();
+  expect(step).toBe(3);
+});
