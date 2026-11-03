@@ -70,7 +70,7 @@ Owner approved pending-only hosted migrations, initial Auth admin/company bootst
 - [x] Preserve the actual catalog preflight findings in docs/demo/catalog-preflight-summary.json. The earlier SQL-read-only gate was explicitly approved and completed; bucket privacy still unknown.
 - [x] Remove DROP POLICY from the unapplied migration3 in favor of ALTER POLICY, preserving permissions/identity. No top-level DROP remains in the five migration files.
 - [x] Add an actual policy-OID preservation check and exact official-image digest override to the local SQL runner; verify116 SQL assertions plus policy preservation on pgvector0.8.2/PostgreSQL17.10, with fixture rollback/container cleanup. No hosted schema/data changed.
-- [~] Commit/push verified local demo preparation and non-destructive migration changes on feat/phase-1-foundation.
+- [x] Commit/push verified local demo preparation and non-destructive migration changes on feat/phase-1-foundation — 731dcda; successful origin push and clean tracking status verified.
 - [!] Hosted foundation awaits storage_read to inspect bucket privacy and database_migrations_write to apply/record migrations after refreshed conflict checks. No Full access requested; no denied operation bypassed.
 - [!] Actual Auth login/creation, upload/indexing/Llama/recovery acceptance awaits private Supabase app keys and Cloudflare account/token. App health200/local UI rendering and offline tests are not a successful live acceptance run.
 - [x] Record interim acceptance honestly in docs/DEMO_LIVE_STATUS.md: Storage403, no hosted writes, runtime keys missing, no real Llama/Auth journey. Narrow permissions documented from official API metadata, not guessed.
