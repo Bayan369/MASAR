@@ -27,3 +27,8 @@ Scope: complete/test the product locally, prepare deployment, commit/push the fe
 Environment restart recovery: all source changes survived; orphaned local test servers were stopped and the final24 browser tests, image builds/smoke and127 backend tests were rerun successfully. The restricted environment/network configuration was not changed. No secret `.env` file was committed or included in images.
 
 Evidence: docs/VALIDATION.md. Setup/deployment: docs/DEPLOYMENT.md. Architecture/security: docs/DATABASE_FOUNDATION.md and docs/PRODUCT_DECISIONS.md. Original PHASE1_PROGRESS.md remains the historical foundation checklist; no development checklist is rendered in the employee UI.
+
+## UTF-8 subprocess regression — 2026-11-03
+
+- [x] Reproduce legacy stdout encoding corruption with a real subprocess under cp1252:replace; enforce explicit UTF-8 binary output/strict parent decoding and fixed child UTF-8 settings while retaining the environment allowlist and25-second timeout. Four regression cases verify Arabic/English preservation, secret isolation and invalid-encoding rejection.
+- [x] Complete Backend suite: `UV_CACHE_DIR=/tmp/masar-encoding-uv uv run --frozen --extra dev pytest` —131 passed on Linux/Python3.12.14, including legacy Windows-style stream simulation. Ruff lint/format passed. No hosted SQL, Supabase operations, commits or pushes.

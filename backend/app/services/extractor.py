@@ -96,6 +96,14 @@ def chunks(pages: list[dict]) -> list[dict]:
     return result
 
 
+def write_result(payload: dict) -> None:
+    """Use a UTF-8 wire format even when the console/locale uses another codec."""
+    sys.stdout.buffer.write(
+        json.dumps(payload, ensure_ascii=False).encode("utf-8", errors="strict") + b"\n"
+    )
+    sys.stdout.buffer.flush()
+
+
 if __name__ == "__main__":
     try:
         try:
@@ -106,12 +114,12 @@ if __name__ == "__main__":
         except ImportError:
             pass  # Parent still enforces wall-time/size on Windows.
         parts = chunks(extract(sys.stdin.buffer.read(MAX_BYTES + 1), sys.argv[1]))
-        print(json.dumps({"chunks": parts}, ensure_ascii=False))
+        write_result({"chunks": parts})
     except Exception as exc:
         code = (
             str(exc)
             if isinstance(exc, (ValueError, UnicodeError)) and re.fullmatch("[A-Z_]+", str(exc))
             else "EXTRACTION_FAILED"
         )
-        print(json.dumps({"error": code}))
+        write_result({"error": code})
         raise SystemExit(1)

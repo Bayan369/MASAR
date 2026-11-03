@@ -27,9 +27,12 @@ def extract_parts(data: bytes, kind: str) -> list[dict]:
             env={
                 "PATH": os.environ.get("PATH", ""),
                 "SYSTEMROOT": os.environ.get("SYSTEMROOT", ""),
+                "PYTHONUTF8": "1",
+                "PYTHONIOENCODING": "utf-8:strict",
             },
         )
-        payload = json.loads(result.stdout)
+        # Binary pipes avoid locale-dependent parent/child text conversion.
+        payload = json.loads(result.stdout.decode("utf-8", errors="strict"))
     except (subprocess.TimeoutExpired, ValueError, OSError):
         raise ValueError("EXTRACTION_FAILED") from None
     if result.returncode or "error" in payload:
