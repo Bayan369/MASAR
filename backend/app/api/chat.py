@@ -9,6 +9,8 @@ from app.api.assistant import Question
 from app.services.assistant import Answer, answer_question
 from app.services.cloudflare import AIUnavailable
 from app.services.retrieval import Hit, Passage
+from app.services.semantic_search import rewrite_query
+from app.services.demo_conversation import AFFIRMATIVE, clean_social_prefix
 from app.services.supabase import Identity, Supabase, identity, error
 
 router = APIRouter(prefix="/api/v1", tags=["المساعد"])
@@ -101,12 +103,43 @@ def ask(body: Ask, request: Request, member: Identity = Depends(identity)):
                 raise
         conv_id = rows[0]["id"]
     try:
+        # Read only after verifying conversation ownership; never trust client history here.
+        history = []
+        if body.conversation_id:
+            previous = member.db.rows(
+                "messages",
+                select="role,content",
+                company_id="eq." + member.company_id,
+                conversation_id="eq." + conv_id,
+                order="created_at.desc,id.desc",
+                limit="10",
+            )
+            history = [
+                {"role": row["role"], "content": row["content"][:2000]}
+                for row in reversed(previous)
+                if row.get("role") in {"user", "assistant"}
+                and isinstance(row.get("content"), str)
+                and row["content"].strip()
+            ]
+        query = body.question
         embedding = None
         if request.app.state.settings.retrieval_mode == "hybrid":
-            embedding = request.app.state.ai_provider.embed([body.question])[0]
+            if history:
+                query = rewrite_query(body.question, history, request.app.state.ai_provider)
+            embedding = request.app.state.ai_provider.embed([query])[0]
+        elif history and AFFIRMATIVE.fullmatch(clean_social_prefix(query)):
+            query = next(
+                (
+                    row["content"]
+                    for row in reversed(history)
+                    if row["role"] == "user"
+                    and not AFFIRMATIVE.fullmatch(clean_social_prefix(row["content"]))
+                ),
+                query,
+            )
         rows = member.db.rpc(
             "search_chunks",
-            {"query_text": body.question, "query_embedding": embedding, "result_limit": 6},
+            {"query_text": query, "query_embedding": embedding, "result_limit": 6},
         )
         hits = [
             Hit(
@@ -128,7 +161,11 @@ def ask(body: Ask, request: Request, member: Identity = Depends(identity)):
             for row in rows
         ]
         result = answer_question(
-            body.question, request.app.state.ai_provider, retrieved_hits=hits, demo=False
+            body.question,
+            request.app.state.ai_provider,
+            retrieved_hits=hits,
+            demo=False,
+            conversation=history,
         )
         Supabase(request.app.state.settings, trusted=True).rpc(
             "save_turn",

@@ -51,7 +51,9 @@ export async function askLlama(
         typeof source.quote !== "string",
     ) ||
     (data.status === "answered" &&
-      (data.generated_by !== "Cloudflare Workers AI / Llama" || !data.model))
+      (!data.sources.length ||
+        data.generated_by !== "Cloudflare Workers AI / Llama" ||
+        !data.model))
   )
     throw new Error("تعذّر التحقق من مصدر إجابة Llama.");
   return {

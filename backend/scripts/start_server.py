@@ -30,6 +30,14 @@ def server_options():
     }
 
 
+def configure_logging():
+    # Only app loggers have audited content-free INFO diagnostics. HTTP clients may log URLs.
+    logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(name)s %(message)s")
+    logging.getLogger("app").setLevel(logging.INFO)
+    for name in ("httpx", "httpx2", "httpcore", "httpcore2"):
+        logging.getLogger(name).setLevel(logging.WARNING)
+
+
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s %(message)s")
+    configure_logging()
     uvicorn.run("app.main:app", **server_options())

@@ -8,6 +8,8 @@ For the separate anonymous training trial, see [Public Llama Demo](docs/PUBLIC_L
 
 See [Semantic RAG](docs/SEMANTIC_RAG.md) for the Demo vector index, query rewriting, hybrid retrieval, reranking and real-only acceptance runner.
 
+See [AI path review](docs/AI_REVIEW.md) for the verified defects, identity/scope fixes and live-test limits.
+
 ## Structure
 
 ```text

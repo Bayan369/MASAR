@@ -169,3 +169,38 @@ test("document proxy rejects traversal and never leaks failed upstream content",
   assert.equal(res.code, 502);
   assert.ok(!JSON.stringify(res.body).includes("PRIVATE_UPSTREAM_ERROR"));
 });
+
+test("proxy preserves safe search failure code without forwarding private upstream messages", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  globalThis.fetch = async () =>
+    new globalThis.Response(
+      JSON.stringify({
+        error: {
+          code: "AI_SEARCH_INVALID",
+          message: "PRIVATE_DOCUMENT_OR_TOKEN",
+          headers: "PRIVATE_HEADERS",
+        },
+      }),
+      { status: 502 },
+    );
+  const res = response();
+  await handler({ method: "POST", body: { question: "سؤال عربي" } }, res);
+  assert.equal(res.code, 502);
+  assert.equal(res.body.error.code, "AI_SEARCH_INVALID");
+  assert.ok(!JSON.stringify(res.body).includes("PRIVATE_"));
+});
+
+test("proxy keeps configuration errors distinct from malformed upstream responses", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  globalThis.fetch = async () =>
+    new globalThis.Response(
+      JSON.stringify({
+        error: { code: "AI_NOT_CONFIGURED", message: "private" },
+      }),
+      { status: 503 },
+    );
+  const res = response();
+  await handler({ method: "POST", body: { question: "سؤال عربي" } }, res);
+  assert.equal(res.code, 503);
+  assert.equal(res.body.error.code, "AI_NOT_CONFIGURED");
+});

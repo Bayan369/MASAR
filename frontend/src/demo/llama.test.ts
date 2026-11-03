@@ -126,3 +126,21 @@ it("maps a backend greeting to conversational without claiming model provenance"
   expect(reply.status).toBe("conversational");
   expect(reply.sources).toEqual([]);
 });
+
+it("rejects an answered response with model metadata but no evidence", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          status: "answered",
+          answer: "Unsupported test response",
+          sources: [],
+          generated_by: "Cloudflare Workers AI / Llama",
+          model: "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        }),
+      ),
+    ),
+  );
+  await expect(askLlama("سؤال", context)).rejects.toThrow("مصدر");
+});

@@ -8,6 +8,7 @@ from app.services.cloudflare import AIUnavailable, CloudflareProvider
 from app.services.demo_conversation import answer_demo_question
 from app.services.retrieval import passages
 from app.services.semantic_search import HybridSearch
+from scripts.start_server import configure_logging
 
 ONBOARDING_QUESTIONS = (
     "وش أسوي بأول يوم؟",
@@ -22,6 +23,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--run-live", action="store_true", help="Allow real Workers Free model calls"
+    )
+    parser.add_argument(
+        "--extended",
+        action="store_true",
+        help="Also test ambiguous onboarding and short confirmations with real history",
     )
     args = parser.parse_args()
     if not args.run_live:
@@ -41,13 +47,15 @@ def main():
         missing.append("MASAR_CLOUDFLARE_FREE_PLAN_CONFIRMED")
     if settings.retrieval_mode != "hybrid":
         missing.append("MASAR_RETRIEVAL_MODE (hybrid required)")
-    # Five onboarding + leave + continuation + out-of-corpus use up to 33 calls.
-    if settings.ai_call_budget < 40:
-        missing.append("MASAR_AI_CALL_BUDGET (at least 40 for the complete evaluation)")
+    # Extended evaluation uses up to roughly 53 calls; never raise the budget silently.
+    required_budget = 60 if args.extended else 40
+    if settings.ai_call_budget < required_budget:
+        missing.append(f"MASAR_AI_CALL_BUDGET (at least {required_budget} for this evaluation)")
     if missing:
         print("Missing/unsuitable settings: " + ", ".join(missing))
         print("No Cloudflare request made.")
         return 2
+    configure_logging()
     provider, search = CloudflareProvider(settings), HybridSearch()
 
     def ask(question, history, document=None, section=None):
@@ -78,7 +86,17 @@ def main():
 
     try:
         for question in ONBOARDING_QUESTIONS:
-            ask(question, [], "employee-handbook", "Onboarding")
+            onboarding = ask(question, [], "employee-handbook", "Onboarding")
+        if args.extended:
+            ask(
+                "كيف أبدأ دوامي؟",
+                [
+                    {"role": "user", "content": ONBOARDING_QUESTIONS[-1]},
+                    {"role": "assistant", "content": onboarding.answer[:2000]},
+                ],
+                "employee-handbook",
+                "Onboarding",
+            )
         question = "ما هي سياسة الإجازات؟"
         result = ask(question, [], "leave-policy")
         ask(
@@ -89,8 +107,17 @@ def main():
             ],
             "leave-policy",
         )
+        if args.extended:
+            offer = "اشرح سياسة الإجازات المتاحة ثم اسألني هل أريد معرفة إجراء تقديم الطلب"
+            actual_offer = ask(offer, [], "leave-policy")
+            history = [
+                {"role": "user", "content": offer},
+                {"role": "assistant", "content": actual_offer.answer[:2000]},
+            ]
+            for confirmation in ("نعم", "إيه", "أكيد"):
+                ask(confirmation, history, "leave-policy")
         assert ask("ما رقم الرحلة القادمة إلى المريخ؟", []).status == "not_found"
-        for greeting in ("هاي", "هلا", "أهلًا", "مرحبا", "السلام عليكم", "كيفك"):
+        for greeting in ("هاي", "هلا", "أهلًا", "مرحبا", "السلام عليكم", "كيفك", "كيفك؟"):
             assert ask(greeting, []).status == "conversational"
     except AIUnavailable as error:
         print("Live evaluation stopped; code=" + error.code)

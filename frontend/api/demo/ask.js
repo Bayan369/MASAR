@@ -4,8 +4,10 @@ import process from "node:process";
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
   response.setHeader("Content-Type", "application/json; charset=utf-8");
-  const fail = (status, message) =>
-    response.status(status).json({ error: { message } });
+  const fail = (status, message, code) =>
+    response
+      .status(status)
+      .json({ error: { message, ...(code ? { code } : {}) } });
   if (request.method !== "POST") {
     response.setHeader("Allow", "POST");
     return fail(405, "الطريقة غير مسموحة.");
@@ -70,9 +72,51 @@ export default async function handler(request, response) {
       },
     );
     if (!upstream.ok) {
+      // Never forward upstream messages, bodies or headers; expose known safe codes only.
+      const messages = {
+        AI_NOT_CONFIGURED: "خدمة Llama غير مهيّأة في Backend.",
+        FREE_PLAN_NOT_CONFIRMED:
+          "لم يُؤكَّد إعداد خطة Workers Free في Backend.",
+        AI_ACCESS_DENIED: "رُفض وصول Backend إلى خدمة الذكاء الاصطناعي.",
+        AI_QUOTA_OR_RATE_LIMIT: "بلغت خدمة الذكاء الاصطناعي حد الاستخدام.",
+        AI_BUDGET_REACHED:
+          "بلغت الخدمة ميزانية محاولات الذكاء الاصطناعي المحددة لهذه العملية.",
+        AI_HALTED:
+          "أُوقفت خدمة الذكاء الاصطناعي بعد خطأ سابق؛ يلزم فحص Backend.",
+        AI_BUSY: "خدمة الذكاء الاصطناعي مشغولة. حاول لاحقًا.",
+        AI_SEARCH_INVALID:
+          "تعذّر التحقق من نتائج البحث؛ لم تُستخدم مصادر غير موثوقة.",
+        AI_EMBEDDING_INVALID: "تعذّر التحقق من متجهات البحث.",
+        AI_ANSWER_INVALID:
+          "تعذّر التحقق من الإجابة وأدلتها؛ لم تُعرض إجابة بديلة.",
+        AI_PROVIDER_RESPONSE_INVALID:
+          "تعذّر قراءة استجابة خدمة الذكاء الاصطناعي.",
+        AI_CONNECTION_FAILED: "تعذّر اتصال Backend بخدمة الذكاء الاصطناعي.",
+        AI_PROVIDER_ERROR: "أبلغت خدمة الذكاء الاصطناعي عن فشل الطلب.",
+        DEMO_LIMIT: "بلغت النسخة التجريبية حد الطلبات. حاول لاحقًا.",
+        INVALID_REQUEST: "السؤال أو سياق المحادثة غير صالح.",
+      };
+      const error = await upstream.json().catch(() => null);
+      const code = error?.error?.code;
       if (upstream.status === 429) {
         response.setHeader("Retry-After", "60");
-        return fail(429, "بلغت النسخة التجريبية حد الطلبات. حاول لاحقًا.");
+        return fail(
+          429,
+          typeof code === "string" && Object.hasOwn(messages, code)
+            ? messages[code]
+            : messages.DEMO_LIMIT,
+          typeof code === "string" && Object.hasOwn(messages, code)
+            ? code
+            : "DEMO_LIMIT",
+        );
+      }
+      if (typeof code === "string" && Object.hasOwn(messages, code)) {
+        const status = [400, 401, 403, 413, 422, 502, 503, 504].includes(
+          upstream.status,
+        )
+          ? upstream.status
+          : 502;
+        return fail(status, messages[code], code);
       }
       return fail(
         502,

@@ -10,7 +10,9 @@ from app.services.retrieval import retrieve
 from test_assistant import StubLlama
 
 
-@pytest.mark.parametrize("greeting", ["هاي", "هلا", "أهلًا", "مرحبا", "السلام عليكم", "كيفك"])
+@pytest.mark.parametrize(
+    "greeting", ["هاي", "هلا", "أهلًا", "مرحبا", "السلام عليكم", "كيفك", "كيفك؟"]
+)
 def test_social_greeting_never_calls_model_or_claims_knowledge(greeting):
     provider = StubLlama()
     answer = answer_demo_question(greeting, provider, [])
