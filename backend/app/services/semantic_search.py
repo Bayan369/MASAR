@@ -77,15 +77,92 @@ class Ranking(BaseModel):
     results: list[Relevance] = Field(max_length=8)
 
 
-def structured(provider, prompt, question, schema):
-    try:
-        return schema.model_validate_json(
-            normalize_answer_json(provider.generate(prompt, question))
-        )
-    except ValidationError:
+def log_structured_validation(error, raw, stage):
+    """Log only fixed labels and bounded locations, never messages or input values."""
+    errors = error.errors(include_input=False, include_context=False, include_url=False)
+    if any(item["type"] == "json_invalid" for item in errors):
+        line = column = 0  # Unknown if stdlib accepts JSON rejected by Pydantic.
+        try:
+            json.loads(raw)
+        except json.JSONDecodeError as exc:
+            line, column = exc.lineno, exc.colno
+        except (TypeError, ValueError, RecursionError):
+            pass
         logger.warning(
-            "rag_stage_invalid stage=%s", "rewrite" if issubclass(schema, Rewrite) else "rerank"
+            "rag_json_error stage=%s type=json_invalid line=%s column=%s",
+            stage,
+            line,
+            column,
         )
+        return
+    fields = {
+        "query",
+        "intent",
+        "request",
+        "scope",
+        "conditions",
+        "condition",
+        "status",
+        "evidence_id",
+        "results",
+        "id",
+        "original",
+        "rewritten",
+        "relevant",
+        "score",
+        "relation",
+        "evidence_ids",
+        "condition_ids",
+    }
+    kinds = {
+        "missing",
+        "extra_forbidden",
+        "bool_type",
+        "string_type",
+        "string_too_short",
+        "string_too_long",
+        "string_unicode",
+        "list_type",
+        "too_short",
+        "too_long",
+        "model_type",
+        "dict_type",
+        "float_type",
+        "float_parsing",
+        "finite_number",
+        "greater_than_equal",
+        "less_than_equal",
+        "literal_error",
+    }
+    for item in errors[:8]:
+        path = []
+        for part in item["loc"][:12]:
+            if isinstance(part, str) and part in fields:
+                path.append(part)
+            elif type(part) is int and 0 <= part <= 10000:
+                path.append(str(part))
+            else:
+                path.append("unknown_field")
+        kind = item["type"] if item["type"] in kinds else "schema_error"
+        field = path[-1] if path and path[-1] in fields else "unknown_field"
+        logger.warning(
+            "rag_schema_error stage=%s type=%s field=%s path=%s",
+            stage,
+            kind,
+            field,
+            ".".join(path) or "root",
+        )
+
+
+def structured(provider, prompt, question, schema):
+    raw = None
+    try:
+        raw = normalize_answer_json(provider.generate(prompt, question))
+        return schema.model_validate_json(raw)
+    except ValidationError as error:
+        stage = "rewrite" if issubclass(schema, Rewrite) else "rerank"
+        log_structured_validation(error, raw, stage)
+        logger.warning("rag_stage_invalid stage=%s", stage)
         raise AIUnavailable(
             "AI_SEARCH_INVALID", "تعذّر التحقق من صيغة تحليل السؤال أو ترتيب المصادر.", 502
         ) from None
