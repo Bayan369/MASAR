@@ -15,7 +15,7 @@ def clean_social_prefix(question):
     return text[match.end() :].strip(" ،,!؟?.") if match else text
 
 
-def answer_demo_question(question, provider, history, search=None, settings=None):
+def answer_demo_question(question, provider, history, search=None, settings=None, trace=None):
     query = clean_social_prefix(question)
     if not query:
         return Answer(
@@ -38,8 +38,24 @@ def answer_demo_question(question, provider, history, search=None, settings=None
             )
         query = subject
     hits = (
-        search.search(question, history, provider, settings)
+        search.search(
+            question, history, provider, settings, **({"trace": trace} if trace is not None else {})
+        )
         if search is not None
         else retrieve(query)
     )
-    return answer_question(question, provider, retrieved_hits=hits, conversation=history)
+    result = answer_question(question, provider, retrieved_hits=hits, conversation=history)
+    if trace is not None:
+        by_source = {f"S{i}": hit.passage.id for i, hit in enumerate(hits, 1)}
+        trace(
+            {
+                "stage": "answer_sources",
+                "status": result.status,
+                "passages": list(
+                    dict.fromkeys(
+                        by_source[source.id.split(":", 1)[0]] for source in result.sources
+                    )
+                ),
+            }
+        )
+    return result

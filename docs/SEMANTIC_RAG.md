@@ -56,3 +56,19 @@ uv run --frozen --no-dev python -m scripts.evaluate_semantic --run-live
 It requires existing credentials, Workers Free confirmation, hybrid mode and an operator-configured call budget of at least 40 for the complete evaluation (roughly 33 calls). It never changes settings itself. It exits before requests if prerequisites are missing. It tests the five requested onboarding phrasings, leave policy, contextual continuation, greetings and an unrelated question. Add `--extended` for the ambiguous short onboarding query and the three short confirmations with real prior answers; the extended suite requires an explicit budget of at least 60. It checks actual model provenance, original-document evidence and exact quotations; it prints statuses/document IDs, not tokens, account IDs, raw model text or document contents. The corpus only documents the onboarding procedures it actually contains; the model must not invent additional first-day steps.
 
 No live success is asserted until this runner and the actual UI pass with configured Cloudflare. No production deployment is part of this change.
+
+## Pinpointing an evidence-selection acceptance failure
+
+Three successful `status=answered documents=employee-handbook` lines before `Expected evidence not selected` identify the fourth base onboarding case: `What should I do on my first day?`. Its unchanged expected evidence is `employee-handbook`, section containing `Onboarding` (currently `employee-handbook:1`). Earlier successful lines do not identify what the failed case selected.
+
+The evaluator now prints a case index before each request. On an evidence mismatch, it prints metadata-only `case_trace` records for vector scores/ranks, keyword ranks, RRF selection, validated rerank references mapped to actual passage IDs, answer candidates and final cited passage IDs. Rewritten text is hashed; questions, prompts, answers, quotes, documents and credentials are never dumped. The default API does not collect this trace. Trace collection changes neither search results nor model-call count, and the original evidence assertions remain unchanged.
+
+An explicitly scoped diagnostic run can execute the fourth case only:
+
+```sh
+uv run --frozen --no-dev python -m scripts.evaluate_semantic --run-live --onboarding-case 4
+```
+
+It requires at most six provider attempts for the current twelve-passage cold corpus, checks the existing budget without raising it, and does not claim that the full acceptance suite ran. Do not combine it with `--extended`.
+
+If the expected passage disappears before `answer_candidates`, inspect the first stage that excluded it. If it is present there but absent from `answer_sources`, investigate answer/evidence selection rather than retuning embeddings. Offline regression fixtures demonstrate this latter possibility, but are **not a replay or diagnosis of the user's live response**. No relevance weights, thresholds or acceptance expectations are changed without actual stage data.
