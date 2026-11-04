@@ -264,6 +264,11 @@ Return exactly one explicit assessment for EVERY supplied candidate, including i
 Do not omit candidates. If none are relevant, assess each one with relevant=false; do not return an empty list.
 Never return S1/E1, a document title, a passage slug, or any ID outside the supplied enum.
 Score must be a finite JSON number from 0 to 1, and relevant must be a JSON boolean.
+The original question and history define relevance. search_query is only a retrieval hint; it must not narrow or override the original request.
+For a broad procedural request, an explicit action or requirement applicable to the user's stated situation is useful evidence even without a complete checklist.
+For a specific request, a different procedure is not relevant merely because it concerns the same organization or actor.
+Score direct usefulness to the original request, NOT the fraction of the full workflow covered. A single directly supported step can have high relevance.
+Reserve score 0 for no useful support; incomplete coverage or different wording/language alone is not a reason for score 0.
 Mark a passage relevant when it directly supports a relevant part of the requested procedure, even if it does not cover the complete workflow.
 Partial evidence must support an actual requested action or fact, not merely share vocabulary. Do not invent missing steps or favor a specific document.
 Do not infer relevance merely from a shared word. Do not invent IDs, evidence or facts.
