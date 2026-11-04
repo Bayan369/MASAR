@@ -42,7 +42,14 @@ class Condition(BaseModel):
 
 class Intent(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    request: ShortText
+    request: ShortText = Field(
+        description=(
+            "Required nonempty, concise standalone summary of the user's request, not an answer. "
+            "Preserve broad scope and unresolved ambiguity; include action, situation and timing "
+            "only when established by the original question and conversation. Missing context "
+            "does not justify an empty summary or invented details."
+        )
+    )
     scope: Literal["broad", "specific", "ambiguous"]
     conditions: list[Condition] = Field(max_length=6)
 
@@ -280,7 +287,13 @@ def resolve_intent(question, history, provider):
         """Rewrite the question and resolve its intent, not an answer.
 Understand Arabic, Saudi dialect and English; resolve short confirmations and ellipsis using history.
 The ORIGINAL question is authoritative. Preserve broad requests; never narrow them to a guessed procedure.
-Extract the requested action, actor/situation and timing into intent.request. Do not invent steps or company facts.
+intent.request must be a concise, standalone, nonempty summary of what the user asks, not an answer or a checklist.
+Summarize the requested action; retain actor/situation and timing ONLY when established by the original question or history.
+A brief summary is sufficient; a full restatement is not required. Never emit an empty string or whitespace-only value.
+For broad requests, preserve their breadth instead of guessing a narrower procedure.
+When context is insufficient, describe only the known request and retain its uncertainty with scope=ambiguous.
+Ambiguity is not absence of a request: do not leave intent.request blank or invent a topic, actor, timing, prerequisites or steps.
+Do not invent steps or company facts.
 scope is broad for a workflow, specific for a named action, ambiguous when context cannot resolve intent.
 conditions contains only user-stated prerequisites or explicitly uncertain conditions, not guessed obligations.
 Each condition has condition, status (confirmed/denied/unknown), evidence_id.
