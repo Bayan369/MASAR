@@ -45,10 +45,15 @@ class RubricFixture(SearchFixture):
                 "results": [
                     {
                         "id": candidate["id"],
-                        "relevant": self.relevant
-                        if candidate["id"] == self.partial_reference
-                        else False,
-                        "score": self.score if candidate["id"] == self.partial_reference else 0.0,
+                        "original": {
+                            "relevant": self.relevant
+                            if candidate["id"] == self.partial_reference
+                            else False,
+                            "score": self.score
+                            if candidate["id"] == self.partial_reference
+                            else 0.0,
+                        },
+                        "rewritten": {"relevant": False, "score": 0.0},
                     }
                     for candidate in self.candidates
                 ]

@@ -31,7 +31,16 @@ def test_reranker_complete_assessments_map_to_original_evidence():
 @pytest.mark.parametrize("ids", [["PRIVATE_UNKNOWN"], ["C1", "C1"], ["C1", "S1"]])
 def test_unknown_or_duplicate_ids_are_rejected_without_leaking_values(ids, caplog):
     ranking = Ranking.model_validate(
-        {"results": [{"id": value, "relevant": True, "score": 0.9} for value in ids]}
+        {
+            "results": [
+                {
+                    "id": value,
+                    "original": {"relevant": True, "score": 0.9},
+                    "rewritten": {"relevant": False, "score": 0.0},
+                }
+                for value in ids
+            ]
+        }
     )
     with pytest.raises(AIUnavailable) as error:
         checked_ranking(ranking, {"C1": 0, "C2": 1})

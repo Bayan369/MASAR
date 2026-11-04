@@ -30,11 +30,14 @@ class FinalChoiceFixture(SearchFixture):
                     "results": [
                         {
                             "id": p["id"],
-                            "relevant": "Onboarding" in p["section"]
-                            or "Working hours" in p["section"],
-                            "score": 0.95
-                            if "Onboarding" in p["section"]
-                            else (0.9 if "Working hours" in p["section"] else 0.1),
+                            "original": {
+                                "relevant": "Onboarding" in p["section"]
+                                or "Working hours" in p["section"],
+                                "score": 0.95
+                                if "Onboarding" in p["section"]
+                                else (0.9 if "Working hours" in p["section"] else 0.1),
+                            },
+                            "rewritten": {"relevant": False, "score": 0.0},
                         }
                         for p in metadata["passages"]
                     ]

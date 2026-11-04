@@ -44,8 +44,11 @@ class SearchFixture:
                 "results": [
                     {
                         "id": "invented" if self.bad_ids else p["id"],
-                        "relevant": not self.reject and "Onboarding" in p["section"],
-                        "score": 0.95 if "Onboarding" in p["section"] else 0.1,
+                        "original": {
+                            "relevant": not self.reject and "Onboarding" in p["section"],
+                            "score": 0.95 if "Onboarding" in p["section"] else 0.1,
+                        },
+                        "rewritten": {"relevant": False, "score": 0.0},
                     }
                     for p in data["passages"]
                 ]
