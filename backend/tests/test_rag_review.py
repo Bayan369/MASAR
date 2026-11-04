@@ -13,12 +13,10 @@ from test_semantic_search import ONBOARDING_ID, SearchFixture
 from test_product import COMPANY, CONV, DOC, FakeDB, config, member_app
 
 
-def test_reranker_valid_relevant_subset_maps_to_original_evidence():
+def test_reranker_complete_assessments_map_to_original_evidence():
     class Subset(SearchFixture):
         def generate(self, prompt, question):
             result = json.loads(super().generate(prompt, question))
-            if prompt.startswith("Rerank"):
-                result["results"] = [item for item in result["results"] if item["relevant"]]
             return json.dumps(result)
 
     provider = Subset()
@@ -42,7 +40,7 @@ def test_unknown_or_duplicate_ids_are_rejected_without_leaking_values(ids, caplo
     assert "PRIVATE_UNKNOWN" not in caplog.text
 
 
-def test_empty_rerank_is_not_found_without_reusing_discarded_candidates():
+def test_empty_rerank_is_incomplete_without_reusing_discarded_candidates():
     class Empty(SearchFixture):
         def generate(self, prompt, question):
             return (
@@ -51,7 +49,9 @@ def test_empty_rerank_is_not_found_without_reusing_discarded_candidates():
                 else super().generate(prompt, question)
             )
 
-    assert HybridSearch().search("غير مرتبط", [], Empty(), Settings(_env_file=None)) == []
+    with pytest.raises(AIUnavailable) as error:
+        HybridSearch().search("غير مرتبط", [], Empty(), Settings(_env_file=None))
+    assert error.value.code == "AI_SEARCH_INCOMPLETE"
 
 
 def test_rrf_candidate_cap_does_not_drop_either_branch_leader():

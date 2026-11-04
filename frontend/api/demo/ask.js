@@ -84,6 +84,8 @@ export default async function handler(request, response) {
         AI_HALTED:
           "أُوقفت خدمة الذكاء الاصطناعي بعد خطأ سابق؛ يلزم فحص Backend.",
         AI_BUSY: "خدمة الذكاء الاصطناعي مشغولة. حاول لاحقًا.",
+        AI_SEARCH_INCOMPLETE:
+          "لم تكتمل تقييمات مقاطع البحث. لم تُستخدم نتائج غير مكتملة.",
         AI_SEARCH_INVALID:
           "تعذّر التحقق من نتائج البحث؛ لم تُستخدم مصادر غير موثوقة.",
         AI_EMBEDDING_INVALID: "تعذّر التحقق من متجهات البحث.",

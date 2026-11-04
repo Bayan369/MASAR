@@ -204,3 +204,23 @@ test("proxy keeps configuration errors distinct from malformed upstream response
   assert.equal(res.code, 503);
   assert.equal(res.body.error.code, "AI_NOT_CONFIGURED");
 });
+
+test("proxy distinguishes incomplete assessments without exposing upstream data", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  globalThis.fetch = async () =>
+    new globalThis.Response(
+      JSON.stringify({
+        error: {
+          code: "AI_SEARCH_INCOMPLETE",
+          message: "PRIVATE_CANDIDATE_CONTENT",
+        },
+      }),
+      { status: 502 },
+    );
+  const res = response();
+  await handler({ method: "POST", body: { question: "طلب إجراء عام" } }, res);
+  assert.equal(res.code, 502);
+  assert.equal(res.body.error.code, "AI_SEARCH_INCOMPLETE");
+  assert.ok(!JSON.stringify(res.body).includes("PRIVATE_"));
+  assert.equal(res.body.answer, undefined);
+});
