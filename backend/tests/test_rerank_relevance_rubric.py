@@ -7,7 +7,7 @@ import pytest
 from app.config import Settings
 from app.services.semantic_search import HybridSearch
 from app.services.retrieval import passages
-from test_semantic_search import SearchFixture
+from test_semantic_search import SearchFixture, original_assessment, intent_result
 
 
 class RubricFixture(SearchFixture):
@@ -19,7 +19,7 @@ class RubricFixture(SearchFixture):
     def generate(self, prompt, question):
         self.prompts.append(prompt)
         if prompt.startswith("Rewrite"):
-            return json.dumps({"query": "working hours"})
+            return json.dumps(intent_result("working hours", question))
         assert prompt.startswith("Rerank")
         assert "search_query is only a retrieval hint" in prompt
         assert "must not narrow or override the original request" in prompt
@@ -45,14 +45,11 @@ class RubricFixture(SearchFixture):
                 "results": [
                     {
                         "id": candidate["id"],
-                        "original": {
-                            "relevant": self.relevant
-                            if candidate["id"] == self.partial_reference
-                            else False,
-                            "score": self.score
-                            if candidate["id"] == self.partial_reference
-                            else 0.0,
-                        },
+                        "original": original_assessment(
+                            candidate["id"],
+                            self.relevant if candidate["id"] == self.partial_reference else False,
+                            self.score if candidate["id"] == self.partial_reference else 0.0,
+                        ),
                         "rewritten": {"relevant": False, "score": 0.0},
                     }
                     for candidate in self.candidates

@@ -7,7 +7,7 @@ from app.config import Settings
 from app.services.retrieval import passages
 from app.services.semantic_search import HybridSearch
 from scripts import evaluate_semantic
-from test_semantic_search import SearchFixture, vector
+from test_semantic_search import SearchFixture, vector, original_assessment
 
 
 class FinalChoiceFixture(SearchFixture):
@@ -30,13 +30,13 @@ class FinalChoiceFixture(SearchFixture):
                     "results": [
                         {
                             "id": p["id"],
-                            "original": {
-                                "relevant": "Onboarding" in p["section"]
-                                or "Working hours" in p["section"],
-                                "score": 0.95
+                            "original": original_assessment(
+                                p["id"],
+                                "Onboarding" in p["section"] or "Working hours" in p["section"],
+                                0.95
                                 if "Onboarding" in p["section"]
                                 else (0.9 if "Working hours" in p["section"] else 0.1),
-                            },
+                            ),
                             "rewritten": {"relevant": False, "score": 0.0},
                         }
                         for p in metadata["passages"]

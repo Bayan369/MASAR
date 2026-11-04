@@ -9,7 +9,7 @@ from fastapi.testclient import TestClient
 from app.config import Settings
 from app.services.cloudflare import AIUnavailable
 from app.services.semantic_search import HybridSearch, Ranking, checked_ranking, fuse_candidates
-from test_semantic_search import ONBOARDING_ID, SearchFixture
+from test_semantic_search import ONBOARDING_ID, SearchFixture, original_assessment
 from test_product import COMPANY, CONV, DOC, FakeDB, config, member_app
 
 
@@ -35,7 +35,7 @@ def test_unknown_or_duplicate_ids_are_rejected_without_leaking_values(ids, caplo
             "results": [
                 {
                     "id": value,
-                    "original": {"relevant": True, "score": 0.9},
+                    "original": original_assessment(value, True, 0.9),
                     "rewritten": {"relevant": False, "score": 0.0},
                 }
                 for value in ids

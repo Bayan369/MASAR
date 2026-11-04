@@ -8,7 +8,7 @@ from app.config import Settings
 from app.services.cloudflare import AIUnavailable, CloudflareProvider
 from app.services.demo_conversation import answer_demo_question
 from app.services.retrieval import passages
-from app.services.semantic_search import HybridSearch
+from app.services.semantic_search import HybridSearch, PROTOCOL
 from scripts.start_server import configure_logging
 
 ONBOARDING_QUESTIONS = (
@@ -102,6 +102,7 @@ def main():
             + json.dumps(
                 {
                     "case_index": case_index,
+                    "protocol": PROTOCOL,
                     "expected_document": document,
                     "expected_section": section,
                 },

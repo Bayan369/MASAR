@@ -19,6 +19,20 @@ def vector(index):
     return [1.0 if i == index else 0.0 for i in range(1024)]
 
 
+def original_assessment(reference, relevant=True, score=0.8):
+    return {
+        "relevant": relevant,
+        "score": score,
+        "relation": "partial_support" if relevant else "no_support",
+        "evidence_ids": [reference + ":E1"] if relevant else [],
+        "condition_ids": [],
+    }
+
+
+def intent_result(query, question):
+    return {"query": query, "intent": {"request": question, "scope": "broad", "conditions": []}}
+
+
 class SearchFixture:
     def __init__(self):
         self.batches = []
@@ -36,7 +50,7 @@ class SearchFixture:
     def generate(self, prompt, question):
         self.prompts.append(prompt)
         if prompt.startswith("Rewrite"):
-            return json.dumps({"query": "employee onboarding equipment"})
+            return json.dumps(intent_result("employee onboarding equipment", question))
         assert prompt.startswith("Rerank")
         data = json.loads(prompt.split("CANDIDATES JSON:\n", 1)[1])
         return json.dumps(
@@ -44,10 +58,11 @@ class SearchFixture:
                 "results": [
                     {
                         "id": "invented" if self.bad_ids else p["id"],
-                        "original": {
-                            "relevant": not self.reject and "Onboarding" in p["section"],
-                            "score": 0.95 if "Onboarding" in p["section"] else 0.1,
-                        },
+                        "original": original_assessment(
+                            p["id"],
+                            not self.reject and "Onboarding" in p["section"],
+                            0.95 if "Onboarding" in p["section"] else 0.1,
+                        ),
                         "rewritten": {"relevant": False, "score": 0.0},
                     }
                     for p in data["passages"]

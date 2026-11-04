@@ -10,13 +10,13 @@ from app.config import Settings
 from app.main import create_app
 from app.services.cloudflare import AIUnavailable
 from app.services.semantic_search import HybridSearch, Ranking, checked_ranking
-from test_semantic_search import SearchFixture
+from test_semantic_search import SearchFixture, original_assessment
 
 
 def assessment(reference, relevant=True, score=0.8):
     return {
         "id": reference,
-        "original": {"relevant": relevant, "score": score},
+        "original": original_assessment(reference, relevant, score),
         "rewritten": {"relevant": False, "score": 0.0},
     }
 
@@ -185,7 +185,7 @@ class DualViewFixture(SearchFixture):
                 "results": [
                     {
                         "id": ref,
-                        "original": {"relevant": values[0], "score": values[1]},
+                        "original": original_assessment(ref, values[0], values[1]),
                         "rewritten": {"relevant": values[2], "score": values[3]},
                     }
                     for index, ref in enumerate(self.references)
@@ -219,7 +219,7 @@ def test_only_original_view_controls_eligibility(original, rewritten, selected):
     if selected:
         assert hits[0].score == original[1]
     event = next(e for e in events if e["stage"] == "rerank")
-    assert event["results"][0]["original"] == {"relevant": original[0], "score": original[1]}
+    assert event["results"][0]["original"] == original_assessment("C1", *original)
     assert event["results"][0]["rewritten"] == {"relevant": rewritten[0], "score": rewritten[1]}
     assert event["omitted"] == []
     assert len(provider.prompts) == 2

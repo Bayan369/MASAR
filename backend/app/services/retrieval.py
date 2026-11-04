@@ -72,6 +72,10 @@ class Passage:
 class Hit:
     passage: Passage
     score: float
+    # None retains the existing lexical/protected behavior. Hybrid hits carry exact
+    # original sentence offsets, never model-generated text or rewritten passages.
+    support_ranges: tuple[tuple[int, int], ...] | None = None
+    support_relation: str | None = None
 
 
 @lru_cache
