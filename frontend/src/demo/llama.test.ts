@@ -222,3 +222,34 @@ it("shows a safe Arabic error for a network timeout without creating a reply", a
   await expect(askLlama("سؤال", context)).rejects.toThrow("تعذّر الاتصال");
   expect(fetcher).toHaveBeenCalledTimes(1);
 });
+
+it("Render calls FastAPI directly without cookies and preserves the source contract", async () => {
+  vi.stubEnv("VITE_API_BASE_URL", "https://api.example");
+  const source = {
+    title: "سياسة الإجازات",
+    section: "الإجازات",
+    quote: "اقتباس اختبار النقل",
+    url: "/api/demo/documents/leave-policy",
+  };
+  const fetch = vi.fn().mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        status: "answered",
+        answer: "اختبار نقل فقط",
+        sources: [source],
+        generated_by: "Cloudflare Workers AI / Llama",
+        model: "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+      }),
+    ),
+  );
+  vi.stubGlobal("fetch", fetch);
+  try {
+    const reply = await askLlama("ما هي سياسة الإجازات؟", context);
+    expect(fetch.mock.calls[0][0]).toBe("https://api.example/api/v1/demo/ask");
+    expect(fetch.mock.calls[0][1].credentials).toBe("omit");
+    expect(fetch.mock.calls[0][1].redirect).toBe("error");
+    expect(reply.sources).toEqual([source]);
+  } finally {
+    vi.unstubAllEnvs();
+  }
+});

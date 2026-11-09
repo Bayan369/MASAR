@@ -98,7 +98,7 @@ export const departments = [
 ] as const;
 export const departmentDocuments = departments.map((d) => ({
   id: `department-${d.id}`,
-  title: `بطاقة قسم ${d.name} (${d.term})`,
+  title: `بطاقة قسم ${d.name}`,
   terms: [...d.aliases],
   steps: [
     d.about,
@@ -115,6 +115,6 @@ export const demoNavigation = [
     term: "Getting Started",
   },
   { path: "/policies", label: "السياسات والإجراءات", term: "Policies" },
-  { path: "/documents", label: "المستندات والملفات", term: "Documents" },
+  { path: "/documents", label: "قاعدة المعرفة", term: "Documents" },
   { path: "/assistant", label: "اسأل مسار", term: "MASAR AI" },
 ];

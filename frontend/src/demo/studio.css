@@ -1,0 +1,789 @@
+/* MASAR architectural workspace / a single Arabic navigation axis. */
+.demo-shell.masar-studio {
+  --canvas: #f8fafc;
+  --ink: #18364b;
+  --brand: #29688e;
+  --page-gutter: clamp(22px, 5vw, 84px);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--canvas);
+}
+.masar-studio.assistant-workspace {
+  height: 100dvh;
+  min-height: 0;
+}
+.masar-studio .platform-body {
+  flex: 1;
+  min-width: 0;
+}
+.masar-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  gap: clamp(18px, 3vw, 48px);
+  align-items: center;
+  min-height: 88px;
+  padding: 0 var(--page-gutter);
+  background: #fff;
+  border-bottom: 1px solid #dae5ed;
+  flex-shrink: 0;
+}
+.masar-brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  flex-shrink: 0;
+  color: var(--ink);
+  font-size: 31px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -1px;
+}
+.masar-brand .gateway-mark {
+  width: 43px;
+  height: 43px;
+}
+.masar-brand small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  font-weight: 400;
+  letter-spacing: 0;
+  margin-top: 4px;
+}
+.masar-nav-links {
+  align-self: stretch;
+  display: flex;
+  gap: clamp(12px, 2.5vw, 36px);
+  align-items: stretch;
+  margin-inline: auto;
+}
+.masar-nav-links > a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  padding: 6px 2px;
+  color: #617787;
+  font-size: 13px;
+  white-space: nowrap;
+  border-radius: 2px;
+}
+.masar-nav-links > a > svg {
+  opacity: 0.75;
+  width: 16px;
+}
+.masar-nav-links > a::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  inset-inline: 0;
+  height: 2px;
+  background: #4797c7;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 240ms var(--motion-ease);
+}
+.masar-nav-links > a > i {
+  position: absolute;
+  bottom: 10px;
+  left: calc(50% - 2px);
+  width: 4px;
+  height: 4px;
+  background: #4797c7;
+  transform: rotate(45deg) scale(0);
+  transition: transform 240ms var(--motion-ease);
+}
+.masar-nav-links > a:hover {
+  color: #225d80;
+}
+.masar-nav-links > a:hover::after {
+  transform: scaleX(0.45);
+}
+.masar-nav-links > a[aria-current] {
+  color: #17486a;
+  font-weight: 600;
+}
+.masar-nav-links > a[aria-current]::after {
+  transform: scaleX(1);
+}
+.masar-nav-links > a[aria-current] > i {
+  transform: rotate(45deg) scale(1);
+}
+.masar-nav-utility {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--brand);
+  font-size: 12px;
+  padding-inline-start: 20px;
+  border-inline-start: 1px solid var(--border);
+}
+.masar-menu-button,
+.masar-nav-links > .masar-mobile-procedures {
+  display: none;
+}
+.masar-studio .demo-main {
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding-top: 34px;
+}
+.masar-studio .platform-page-heading {
+  gap: 16px;
+  margin-bottom: 26px;
+}
+.masar-studio .platform-page-heading h1 {
+  font-size: clamp(25px, 2.6vw, 37px);
+  font-weight: 500;
+}
+.masar-studio .platform-page-index {
+  width: auto;
+  height: auto;
+  aspect-ratio: auto;
+  border: 0;
+  color: #466f87;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 1px;
+  align-self: start;
+  padding-top: 3px;
+  border-top: 2px solid #80b8da;
+  border-radius: 0;
+}
+.masar-studio .platform-page-heading .platform-eyebrow {
+  display: none;
+}
+.masar-studio .platform-page-heading > .platform-text-link {
+  margin-inline-start: auto;
+}
+.masar-studio .platform-footer {
+  margin-top: auto;
+  padding-inline: var(--page-gutter);
+}
+/* Hero lives on the canvas rather than inside a dark dashboard card. */
+.masar-studio .product-journey {
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 620px;
+  border-radius: 0;
+  background: #f0f7fc;
+  color: var(--ink);
+  grid-template-columns: 1.12fr 1fr;
+  padding: 54px 42px;
+  gap: 5%;
+}
+.masar-studio .product-journey::before {
+  background: linear-gradient(115deg, #e2f1fc00, #e2f1fc 65%, #eff6fc);
+}
+.masar-studio .journey-copy {
+  z-index: 2;
+  position: relative;
+  align-self: start;
+  padding-top: 24px;
+}
+.masar-studio .journey-eyebrow {
+  color: #497089;
+  margin-bottom: 28px;
+  font-size: 12px;
+}
+.masar-studio .journey-eyebrow > span {
+  background: #438bb7;
+  box-shadow: 0 0 0 4px #438bb716;
+}
+.masar-studio .journey-copy h2 {
+  font-size: clamp(40px, 4.6vw, 72px);
+  line-height: 1.45;
+  letter-spacing: -2px;
+  font-weight: 500;
+}
+.masar-studio .journey-copy h2 em {
+  color: #367ca6;
+}
+.masar-studio .journey-copy > p {
+  color: #4d6c80;
+  font-size: 16px;
+  max-width: 35ch;
+  margin-top: 24px;
+}
+.masar-studio .journey-primary {
+  background: #215e84;
+  color: #fff;
+  border-radius: 3px 3px 13px 3px;
+  padding: 14px 22px;
+}
+.masar-studio .journey-primary:hover {
+  background: #174b6d;
+  box-shadow: 0 8px 20px #29688e20;
+}
+.masar-studio .journey-secondary,
+.masar-studio .journey-principles {
+  color: #466a82;
+}
+.masar-studio .journey-workbench {
+  z-index: 2;
+  position: relative;
+  align-self: end;
+  margin-top: 125px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 16px 48px #34617d13;
+  border: 1px solid #cfdfeb;
+}
+.masar-studio .journey-workbench-heading {
+  padding-top: 16px;
+}
+.masar-studio .journey-mark,
+.masar-studio .journey-wordmark,
+.masar-studio .journey-route {
+  display: none;
+}
+.masar-studio .journey-workbench-heading > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+.masar-studio .journey-workbench-heading strong {
+  font-size: 12px;
+}
+.masar-studio .journey-workbench-heading small {
+  font-size: 9px;
+}
+.masar-studio .journey-stages {
+  margin-top: 12px;
+}
+.masar-studio .journey-panel {
+  min-height: 205px;
+  padding-block: 22px;
+}
+.masar-studio .journey-workbench-footer {
+  background: #f7fbfe;
+}
+.knowledge-gateway {
+  position: absolute;
+  width: min(62%, 720px);
+  inset-inline-end: -1%;
+  top: -45px;
+  z-index: 0;
+  pointer-events: none;
+  transform-origin: center;
+  transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.knowledge-gateway > svg {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.gateway-ground {
+  fill: #e6f1fa;
+}
+.gateway-depth {
+  fill: url(#gateway-depth);
+}
+.gateway-face {
+  fill: #d1e7f6;
+  stroke: #a3c9e0;
+  stroke-width: 1;
+}
+.gateway-outline {
+  stroke: #80b1cf;
+  stroke-width: 1;
+}
+.gateway-route-base {
+  stroke: #b4d1e3;
+  stroke-width: 2;
+}
+.gateway-route-light {
+  stroke: #438bb7;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-dasharray: 45 680;
+}
+.gateway-document > path:first-child,
+.gateway-response > path:first-child {
+  fill: #f8fcff;
+  stroke: #90bcd5;
+  stroke-width: 1;
+}
+.gateway-document > path + path,
+.gateway-response > path + path {
+  stroke: #72a6c5;
+  stroke-width: 3;
+}
+.gateway-coordinate {
+  stroke: #bad5e5;
+  stroke-dasharray: 3 6;
+}
+.gateway-label {
+  position: absolute;
+  font-size: 10px;
+  color: #4d7892;
+  background: #eff7fd;
+  padding: 3px 6px;
+}
+.gateway-label-source {
+  top: 40%;
+  right: 65%;
+}
+.gateway-label-answer {
+  top: 11%;
+  right: 5%;
+}
+.masar-studio .platform-home-grid > .platform-start-card {
+  margin-top: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  padding: 32px 0;
+}
+.masar-studio .platform-start-card .platform-section-kicker {
+  display: none;
+}
+.masar-studio .platform-start-card h2 {
+  font-size: 20px;
+}
+.masar-studio .platform-start-card ol {
+  margin-block: 20px;
+}
+/* Shared surfaces keep their own reading / directory / procedure layouts. */
+.masar-studio .platform-section-heading {
+  margin-top: 50px;
+}
+.masar-studio .platform-grid.department-grid {
+  gap: 0;
+  border-top: 1px solid var(--border);
+}
+.masar-studio .platform-department-card {
+  padding: 28px 20px;
+  border-inline-start: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: transparent;
+}
+.masar-studio .platform-department-card:hover {
+  background: #edf5fb;
+}
+.masar-studio .platform-monogram {
+  border-radius: 3px 3px 14px 3px;
+  background: #e2f0fa;
+  color: #2b6b91;
+}
+.masar-studio .platform-card-arrow {
+  border-radius: 0;
+  background: transparent;
+}
+.masar-studio .platform-document {
+  border-radius: 0;
+  padding-block: 24px;
+}
+.masar-studio .platform-document:hover {
+  background: #edf5fb;
+}
+.masar-studio .platform-file-icon {
+  background: #e5f1fa;
+  color: #326d94;
+  border-radius: 2px 10px 2px 2px;
+}
+.masar-studio .platform-company {
+  border: 0;
+  border-top: 1px solid #b6d3e5;
+  padding: 35px 0;
+  background: transparent;
+}
+.masar-studio .platform-detail-hero {
+  border-radius: 0;
+  border-bottom: 1px solid var(--border);
+  background: #eaf4fb;
+  padding: 34px;
+}
+.masar-studio .platform-steps li {
+  padding-bottom: 46px;
+}
+.masar-studio .platform-step-number {
+  border-radius: 4px 4px 14px 4px;
+  color: #2e6588;
+}
+.masar-studio .platform-procedure-row:hover {
+  background: #eaf4fb;
+}
+.masar-studio .platform-reading {
+  background: #fff;
+  border-block: 1px solid var(--border);
+  padding: clamp(20px, 4vw, 48px);
+}
+.masar-studio .platform-reading h2 {
+  font-size: 24px;
+  font-weight: 500;
+}
+.masar-studio .platform-source-panel {
+  border-radius: 0;
+  border-inline-start: 2px solid #74aed1;
+}
+/* One assistant viewport, one message scroller. */
+.masar-studio .demo-main.is-assistant {
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+}
+.masar-studio .is-assistant .platform-page-heading {
+  margin: 0;
+  padding: 16px var(--page-gutter);
+}
+.masar-studio .is-assistant .platform-page-heading h1 {
+  font-size: 22px;
+}
+.masar-studio .demo-chat-history {
+  padding-block: 16px;
+}
+.masar-studio .demo-welcome h2 {
+  font-size: clamp(28px, 3vw, 44px);
+  font-weight: 500;
+  letter-spacing: -1px;
+}
+.masar-studio .platform-welcome-icon {
+  border-radius: 8px 8px 26px 8px;
+  width: 76px;
+  height: 76px;
+  background: #e5f3fc;
+  border: 1px solid #c7e0f0;
+}
+.masar-studio .platform-chat-suggestions button {
+  border-radius: 4px;
+  box-shadow: none;
+  border-bottom: 2px solid #d0e2ef;
+}
+.masar-studio .demo-composer > div:first-of-type {
+  border-radius: 10px;
+  box-shadow: 0 4px 25px #34617d08;
+}
+.masar-studio .demo-message.assistant details[open] {
+  border-radius: 0;
+  background: #eaf4fb;
+}
+.masar-studio .demo-message.assistant summary::after {
+  transition: transform 220ms;
+}
+.masar-studio .demo-message.assistant details[open] summary::after {
+  transform: rotate(180deg);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-reduce-motion="true"]) .gateway-route-light {
+    animation: knowledge-transfer 4.6s cubic-bezier(0.4, 0, 0.2, 1) 1 both;
+  }
+  html:not([data-reduce-motion="true"]) .gateway-face {
+    animation: gateway-open 1.4s var(--motion-ease) both;
+  }
+  html:not([data-reduce-motion="true"]) .gateway-document {
+    animation: gateway-rise 1s 100ms both;
+  }
+  html:not([data-reduce-motion="true"]) .gateway-response {
+    animation: gateway-rise 1s 500ms both;
+  }
+  html:not([data-reduce-motion="true"])
+    .product-journey[data-perspective="left"]
+    .knowledge-gateway {
+    transform: translate(-10px, 4px);
+  }
+  html:not([data-reduce-motion="true"])
+    .product-journey[data-perspective="right"]
+    .knowledge-gateway {
+    transform: translate(10px, -4px);
+  }
+  html:not([data-reduce-motion="true"]) .masar-studio .platform-welcome-icon {
+    animation: welcome-gateway 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  html:not([data-reduce-motion="true"])
+    .masar-studio
+    .demo-message.assistant
+    details[open]
+    blockquote {
+    animation: studio-panel 320ms ease-out;
+  }
+}
+@keyframes knowledge-transfer {
+  from {
+    stroke-dashoffset: 700;
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  to {
+    stroke-dashoffset: -700;
+    opacity: 0.7;
+  }
+}
+@keyframes gateway-open {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes gateway-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes studio-panel {
+  from {
+    transform: translateY(7px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes welcome-gateway {
+  from {
+    transform: translateY(15px) rotate(-8deg);
+    opacity: 0.2;
+  }
+  to {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+}
+@media (max-width: 1100px) {
+  .masar-navbar {
+    gap: 20px;
+  }
+  .masar-nav-links {
+    gap: 18px;
+  }
+  .masar-nav-links > a > svg {
+    display: none;
+  }
+  .masar-nav-utility {
+    padding-inline-start: 12px;
+    font-size: 11px;
+  }
+  .masar-studio .product-journey {
+    padding: 38px 28px;
+    gap: 24px;
+  }
+  .masar-studio .journey-copy h2 {
+    font-size: 48px;
+  }
+}
+@media (max-width: 760px) {
+  .masar-navbar {
+    min-height: 72px;
+    padding: 0 22px;
+    gap: 14px;
+  }
+  .masar-brand {
+    font-size: 27px;
+  }
+  .masar-brand .gateway-mark {
+    width: 36px;
+    height: 36px;
+  }
+  .masar-menu-button {
+    display: grid;
+    place-items: center;
+    margin-inline-start: auto;
+    width: 40px;
+    height: 40px;
+    background: #edf6fc;
+    border-radius: 5px;
+    color: var(--ink);
+  }
+  .masar-nav-utility {
+    display: none;
+  }
+  .masar-nav-links {
+    display: none;
+    position: absolute;
+    top: 100%;
+    inset-inline: 0;
+    background: #fff;
+    border-bottom: 1px solid #c5dbe9;
+    padding: 12px 22px 20px;
+    box-shadow: 0 20px 30px #254c6510;
+  }
+  .masar-nav-links.is-open {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px 16px;
+  }
+  .masar-nav-links > a {
+    min-height: 48px;
+    font-size: 14px;
+    padding: 10px 4px;
+  }
+  .masar-nav-links > a > svg {
+    display: block;
+  }
+  .masar-nav-links > a::after {
+    inset-inline-end: 50%;
+  }
+  .masar-nav-links > a > i {
+    display: none;
+  }
+  .masar-nav-links > .masar-mobile-procedures {
+    display: flex;
+    font-size: 12px;
+    color: var(--brand);
+  }
+  .masar-studio .demo-main {
+    padding-top: 22px;
+  }
+  .masar-studio .product-journey {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 26px 20px;
+    gap: 20px;
+  }
+  .masar-studio .journey-copy {
+    padding-top: 0;
+  }
+  .masar-studio .journey-copy h2 {
+    font-size: clamp(36px, 9vw, 48px);
+  }
+  .masar-studio .journey-copy > p {
+    font-size: 14px;
+    max-width: 29ch;
+  }
+  .masar-studio .journey-eyebrow {
+    margin-bottom: 20px;
+  }
+  .masar-studio .journey-principles {
+    font-size: 10px;
+  }
+  .masar-studio .journey-workbench {
+    margin-top: 155px;
+  }
+  .knowledge-gateway {
+    width: 100%;
+    top: 300px;
+    inset-inline-end: -7%;
+  }
+  .gateway-label {
+    display: none;
+  }
+  .masar-studio .journey-workbench-heading > div {
+    display: block;
+  }
+  .masar-studio .platform-home-grid > .platform-start-card {
+    padding: 28px 0;
+  }
+  .masar-studio .platform-page-heading {
+    margin-bottom: 22px;
+  }
+  .masar-studio .is-assistant .platform-page-heading {
+    padding-block: 10px;
+  }
+  .masar-studio .is-assistant .platform-page-heading h1 {
+    font-size: 19px;
+  }
+  .masar-studio .demo-chat-history {
+    padding-block: 8px;
+  }
+  .masar-studio .platform-welcome-icon {
+    width: 54px;
+    height: 54px;
+  }
+}
+@media (max-height: 720px) {
+  .masar-studio .platform-welcome-icon {
+    width: 34px;
+    height: 34px;
+  }
+  .masar-studio .demo-welcome h2 {
+    font-size: 25px;
+  }
+}
+
+/* Reveals are whole Arabic text blocks, never individual glyphs. */
+.masar-studio {
+  --motion-enter: 520ms;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-reduce-motion="true"]) .masar-studio [data-reveal="visible"] {
+    animation-name: studio-section;
+  }
+  html:not([data-reduce-motion="true"]) .masar-studio .demo-message.assistant {
+    animation: studio-answer 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+@keyframes studio-section {
+  from {
+    transform: translateY(22px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes studio-answer {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+/* Existing protected upload form: styling only; no new upload endpoint or fake progress. */
+.product-form[aria-busy] {
+  position: relative;
+}
+.product-form input[type="file"] {
+  border: 1px dashed #8bb8d3;
+  padding: 18px;
+  background: #f3f9fd;
+}
+.product-form input[type="file"]::file-selector-button {
+  border: 0;
+  border-radius: 4px;
+  padding: 9px 14px;
+  margin-inline-end: 14px;
+  color: #215e84;
+  background: #d9edf9;
+  cursor: pointer;
+}
+.product-form[aria-busy="true"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  height: 3px;
+  width: 100%;
+  background: #73add0;
+  transform-origin: right;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-reduce-motion="true"])
+    .product-form[aria-busy="true"]::before {
+    animation: upload-active 1.6s ease-in-out infinite alternate;
+  }
+}
+@keyframes upload-active {
+  from {
+    transform: scaleX(0.25);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.product-journey[data-stage="1"] .gateway-document > path:first-child,
+.product-journey[data-stage="2"] .gateway-face,
+.product-journey[data-stage="3"] .gateway-response > path:first-child {
+  stroke: #387ba6;
+  stroke-width: 2;
+  transition: stroke 300ms;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not([data-reduce-motion="true"]) .masar-studio .journey-panel {
+    animation: studio-panel 300ms var(--motion-ease);
+  }
+}

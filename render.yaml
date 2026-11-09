@@ -1,0 +1,60 @@
+# Public Demo only. No database, company uploads, paid worker, or automatic deployment.
+services:
+  - type: web
+    name: masar-demo-api
+    runtime: docker
+    plan: free
+    branch: feat/public-llama-demo
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeploy: false
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: MASAR_ENVIRONMENT
+        value: demo
+      - key: MASAR_DEMO_ENABLED
+        value: "true"
+      - key: MASAR_CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: MASAR_CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: MASAR_CLOUDFLARE_FREE_PLAN_CONFIRMED
+        sync: false
+      - key: MASAR_CORS_ORIGINS
+        sync: false
+      # Enter the existing approved limit, never increase it just to pass setup.
+      - key: MASAR_AI_CALL_BUDGET
+        sync: false
+  - type: web
+    name: masar-demo
+    runtime: static
+    branch: feat/public-llama-demo
+    rootDir: frontend
+    autoDeploy: false
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: VITE_ASSISTANT_MODE
+        value: llama
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: Referrer-Policy
+        value: no-referrer
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()

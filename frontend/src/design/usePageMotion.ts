@@ -10,7 +10,7 @@ export function usePageMotion(
     if (!root) return;
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const targets = root.querySelectorAll<HTMLElement>(
-      ".platform-page-heading, .platform-hero, .platform-start-card, .platform-link-card, .platform-company, .platform-department-card, .platform-detail-hero, .platform-procedure-row, .platform-steps > li, .platform-reading section, .platform-source-panel",
+      ".platform-page-heading, .product-journey, .platform-hero, .platform-start-card, .platform-link-card, .platform-company, .platform-department-card, .platform-detail-hero, .platform-procedure-row, .platform-steps > li, .platform-reading section, .platform-source-panel",
     );
     let observer: IntersectionObserver | undefined;
     function configure() {

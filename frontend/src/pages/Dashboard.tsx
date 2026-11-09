@@ -9,7 +9,7 @@ import {
   Compass,
 } from "lucide-react";
 import QuestionBox from "../components/QuestionBox";
-import { EmptyState, Icon, SectionHeading, Term } from "../components/ui";
+import { EmptyState, Icon, SectionHeading } from "../components/ui";
 import {
   useResource,
   type Department,
@@ -89,13 +89,7 @@ export default function Dashboard() {
         </aside>
       </div>
       <section className="departments-section">
-        <SectionHeading
-          title={
-            <>
-              تعرّف على أقسام شركتك <Term>Departments</Term>
-            </>
-          }
-        >
+        <SectionHeading title={<>تعرّف على أقسام شركتك</>}>
           <Link className="text-link" to="/departments">
             عرض جميع الأقسام
             <ArrowLeft size={15} />
@@ -162,7 +156,7 @@ export default function Dashboard() {
             </span>
           </div>
           <Link className="secondary-button" to="/knowledge">
-            استكشف قاعدة المعرفة <Term>Knowledge Base</Term>
+            استكشف قاعدة المعرفة
             <ArrowUpLeft size={17} />
           </Link>
         </section>

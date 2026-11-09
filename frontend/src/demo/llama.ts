@@ -1,4 +1,5 @@
 import type { Context, Reply } from "./knowledge";
+import { demoApiUrl } from "./endpoints";
 
 export const liveDemo = import.meta.env.VITE_ASSISTANT_MODE !== "offline";
 
@@ -11,8 +12,10 @@ export async function askLlama(
 ): Promise<Reply> {
   let response: Response;
   try {
-    response = await fetch("/api/demo/ask", {
+    response = await fetch(demoApiUrl("/ask"), {
       method: "POST",
+      credentials: "omit",
+      redirect: "error",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         question,

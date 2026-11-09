@@ -19,6 +19,7 @@ import { knowledge } from "./knowledge";
 import { EmptySearch, SearchField } from "../design/Primitives";
 import { Icon } from "../components/ui";
 import { GatewayMark } from "../design/GatewayMark";
+import { ProductJourney } from "./ProductJourney";
 const clean = (s: string) =>
   s.toLowerCase().replace(/[أإآ]/g, "ا").replace(/[ً-ٟ]/g, "");
 export function Missing() {
@@ -60,32 +61,7 @@ export function Home() {
   return (
     <>
       <div className="platform-home-grid">
-        <section className="platform-hero">
-          <span className="platform-eyebrow">أهلًا بك في مسار</span>
-          <h2>
-            بداية واضحة.
-            <br />
-            ورحلة تعرف طريقها.
-          </h2>
-          <p>
-            تعرّف على شركتك، اكتشف من يساعدك، واعثر على إجابات لأسئلتك. كل ما
-            تحتاجه لبدايتك، في مكان واحد.
-          </p>
-          <div className="platform-actions">
-            <Link className="platform-button" to="/onboarding">
-              ابدأ رحلتك
-              <ArrowUpLeft size={18} />
-            </Link>
-            <Link className="platform-text-link" to="/assistant">
-              <Sparkles size={17} />
-              تحدث مع مسار
-            </Link>
-          </div>
-          <div className="platform-hero-signature">
-            <GatewayMark />
-            <span>معرفة ترشدك، في كل خطوة.</span>
-          </div>
-        </section>
+        <ProductJourney />
         <section className="platform-start-card">
           <GatewayMark className="platform-journey-signature" />
           <div className="platform-section-kicker">
@@ -149,7 +125,7 @@ export function Home() {
             title: "سؤال يبدأ به حوار",
             text: "اسأل، استوضح، وتابع من حيث وصلت مع اسأل مسار.",
             icon: Sparkles,
-            action: "اسأل مسار (MASAR AI)",
+            action: "اسأل مسار",
           },
         ].map((c, index) => (
           <Link
@@ -181,7 +157,7 @@ export function Home() {
             {departments.map((d) => (
               <Link key={d.id} to={`/departments/${d.id}`}>
                 {d.name}
-                <bdi>({d.term})</bdi>
+                {["HR", "IT", "QA"].includes(d.term) && <bdi>({d.term})</bdi>}
               </Link>
             ))}
           </div>
@@ -241,9 +217,11 @@ export function DepartmentsPage() {
                     size={21}
                   />
                 </span>
-                <span className="platform-department-term" dir="ltr">
-                  {d.term}
-                </span>
+                {["HR", "IT", "QA"].includes(d.term) && (
+                  <span className="platform-department-term" dir="ltr">
+                    {d.term}
+                  </span>
+                )}
                 <span className="platform-card-arrow">
                   <ArrowUpLeft size={17} />
                 </span>
@@ -278,11 +256,10 @@ export function DepartmentDetail() {
       </Link>
       <section className="platform-detail-hero">
         <div>
-          <span className="platform-eyebrow" dir="ltr">
-            {d.term}
-          </span>
+          <span className="platform-eyebrow">دليل الفريق</span>
           <h2>
-            {d.name} <bdi>({d.term})</bdi>
+            {d.name}{" "}
+            {["HR", "IT", "QA"].includes(d.term) && <bdi>({d.term})</bdi>}
           </h2>
           <p>{d.about}</p>
         </div>
@@ -493,7 +470,7 @@ export function Procedure({ onboarding = false }: { onboarding?: boolean }) {
             ).map((d) => (
               <Link key={d.id} to={`/departments/${d.id}`}>
                 {d.name}
-                <bdi>({d.term})</bdi>
+                {["HR", "IT", "QA"].includes(d.term) && <bdi>({d.term})</bdi>}
                 <ChevronLeft size={13} />
               </Link>
             ))}

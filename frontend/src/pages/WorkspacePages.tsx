@@ -11,7 +11,7 @@ import {
 } from "../lib/product";
 import { useAuth } from "../auth/AuthProvider";
 import QuestionBox from "../components/QuestionBox";
-import { EmptyState, PageHeading, Term, Icon } from "../components/ui";
+import { EmptyState, PageHeading, Icon } from "../components/ui";
 import { readReducedMotion, saveReducedMotion } from "../lib/preferences";
 function State({
   loading,
@@ -49,11 +49,7 @@ export function Assistant() {
     <>
       <PageHeading
         eyebrow="اسأل من مصادر شركتك"
-        title={
-          <>
-            المساعد الذكي <Term>AI Assistant</Term>
-          </>
-        }
+        title={<>المساعد الذكي</>}
         description="اسأل بالعربية أو الإنجليزية. الإجابة ترتبط بمستندات شركتك المسموح لك بها، مع مراجعها الأصلية."
       />
       <div className="notice">
@@ -157,11 +153,7 @@ export function Departments() {
     <>
       <PageHeading
         eyebrow="دليل شركتك"
-        title={
-          <>
-            الأقسام <Term>Departments</Term>
-          </>
-        }
+        title={<>الأقسام</>}
         description="تعرّف إلى مسؤوليات الأقسام في شركتك."
       />
       <label className="search-field">
@@ -373,11 +365,7 @@ export function Knowledge() {
     <>
       <PageHeading
         eyebrow="المعلومة من مصدرها"
-        title={
-          <>
-            قاعدة المعرفة <Term>Knowledge Base</Term>
-          </>
-        }
+        title={<>قاعدة المعرفة</>}
         description="مستندات الشركة المسموح لك بالوصول إليها. يعتمد المساعد على المحتوى المعالج والمنشور فقط."
       />
       <label className="search-field">
@@ -465,10 +453,12 @@ export function Knowledge() {
         />
       )}
       {isAdmin && (
-        <form className="surface product-form" onSubmit={upload}>
-          <h2>
-            رفع مستند <Term>Upload Document</Term>
-          </h2>
+        <form
+          className="surface product-form"
+          onSubmit={upload}
+          aria-busy={busy}
+        >
+          <h2>رفع مستند</h2>
           <p className="muted">
             PDF وDOCX وTXT حتى 5 ميغابايت. الصور الممسوحة ضوئيًا تحتاج نسخة
             نصية.
@@ -627,11 +617,7 @@ export function History() {
     <>
       <PageHeading
         eyebrow="معرفتك السابقة"
-        title={
-          <>
-            المحادثات السابقة <Term>Conversation History</Term>
-          </>
-        }
+        title={<>المحادثات السابقة</>}
         description="محادثاتك الخاصة فقط. تُخفى الإجابات التي لم تعد مصادرها متاحة لك."
       />
       <State {...resource} />
@@ -708,11 +694,7 @@ export function SettingsPage() {
     <>
       <PageHeading
         eyebrow="حسابك ومساحتك"
-        title={
-          <>
-            الملف الشخصي والإعدادات <Term>Profile & Settings</Term>
-          </>
-        }
+        title={<>الملف الشخصي والإعدادات</>}
         description="بياناتك وتفضيلات العرض. لا يمكن تعديل الدور أو الشركة من ملف الموظف."
       />
       <form className="surface product-form" onSubmit={save}>

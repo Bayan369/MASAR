@@ -71,7 +71,7 @@ test("contextual chat, exact sources, cross-page context and independent history
     .last()
     .click();
   await expect(page).toHaveURL(/\/departments\/it$/);
-  await navigate(page, "اسأل مسار MASAR AI");
+  await navigate(page, "اسأل مسار");
   await send(page, "وش تقصد؟");
   await expect(
     log.getByText("المقصود بالخطوة السابقة", { exact: false }),
@@ -82,7 +82,7 @@ test("contextual chat, exact sources, cross-page context and independent history
   );
   await log.getByRole("link", { name: "افتح المستند الأصلي" }).last().click();
   await expect(page).toHaveURL(/\/documents\/onboarding$/);
-  await navigate(page, "اسأل مسار MASAR AI");
+  await navigate(page, "اسأل مسار");
   await send(page, "كم راتبي؟");
   await expect(
     log.getByText("معلومة غير متوفرة", { exact: true }),
@@ -173,7 +173,7 @@ test("every platform and legacy route, source link, clean copy and accessibility
   await page.goto("/departments/hr");
   await page
     .getByRole("link", {
-      name: "مرجع المعلومات بطاقة قسم الموارد البشرية (HR) قراءة المصدر",
+      name: "مرجع المعلومات بطاقة قسم الموارد البشرية قراءة المصدر",
     })
     .click();
   await expect(page).toHaveURL(/\/documents\/department-hr$/);
@@ -224,7 +224,7 @@ test("department and document search, categories, empty states and original cont
   await expect(page.locator(".platform-department-card")).toHaveCount(
     departments.length,
   );
-  await navigate(page, "المستندات والملفات Documents");
+  await navigate(page, "قاعدة المعرفة");
   await expect(page.locator("a.platform-document")).toHaveCount(
     knowledge.length,
   );
@@ -284,7 +284,7 @@ test("keyboard navigation, responsive menu, suggested question and multiline inp
       page.getByRole("navigation", { name: "التنقل الرئيسي" }),
     ).toBeHidden();
   }
-  await navigate(page, "دليل الأقسام Departments");
+  await navigate(page, "دليل الأقسام");
   await expect(page.locator("h1")).toBeFocused();
   await page.getByRole("link", { name: /IT.*تقنية المعلومات/ }).click();
   await page.getByRole("link", { name: "اسأل مسار عن القسم" }).click();
@@ -462,7 +462,7 @@ test("page motion respects reduced motion and preserves readable content", async
   await page.goto("/");
   const main = page.locator("main");
   await expect(main).toHaveAttribute("data-motion", "enabled");
-  await expect(page.locator(".platform-hero")).toHaveAttribute(
+  await expect(page.locator(".product-journey")).toHaveAttribute(
     "data-reveal",
     "visible",
   );
@@ -514,9 +514,9 @@ test("gateway branding loads consistently in navigation and favicon", async ({
         ),
     )
     .toBe(true);
-  await expect(page.locator(".brand:visible").first()).toHaveAttribute(
+  await expect(page.locator(".masar-brand:visible").first()).toHaveAttribute(
     "aria-label",
-    "مسار MASAR — الرئيسية",
+    "مسار — الرئيسية",
   );
   await assertClean(page);
 });

@@ -35,10 +35,12 @@ import {
 } from "./PlatformPages";
 import { respond, statusLabels, type Context, type Reply } from "./knowledge";
 import { askLlama, liveDemo } from "./llama";
+import { demoSourceHref } from "./endpoints";
 import { PageHeader } from "../design/Primitives";
 import { GatewayMark } from "../design/GatewayMark";
 import { usePageMotion } from "../design/usePageMotion";
 import "./demo.css";
+import "./studio.css";
 type Message =
   | { role: "user"; text: string }
   | { role: "assistant"; text: string; reply: Reply };
@@ -184,100 +186,62 @@ export default function Demo() {
   }
   return (
     <div
-      className={`demo-shell ${assistantPage ? "assistant-workspace" : ""}`}
+      className={`demo-shell masar-studio ${assistantPage ? "assistant-workspace" : ""}`}
       dir="rtl"
     >
       <a className="skip-link" href="#main-content">
         انتقل إلى المحتوى
       </a>
-      <div
-        className="platform-mobile-bar"
-        role="navigation"
-        aria-label="أدوات التنقل"
-      >
-        <Link className="brand" to="/" aria-label="مسار MASAR — الرئيسية">
+      <header className="masar-navbar">
+        <Link className="masar-brand" to="/" aria-label="مسار — الرئيسية">
           <GatewayMark />
-          <span>مسار</span>
-          <bdi className="brand-latin">MASAR</bdi>
+          <span>
+            مسار<small>بوابتك إلى المعرفة</small>
+          </span>
         </Link>
         <button
           ref={menuButton}
-          className="platform-icon-button"
+          className="masar-menu-button"
           aria-label={menuOpen ? "إغلاق القائمة" : "فتح القائمة"}
           aria-expanded={menuOpen}
           aria-controls="platform-sidebar"
-          onClick={() => setMenuOpen((v) => !v)}
+          onClick={() => setMenuOpen((value) => !value)}
         >
-          {menuOpen ? <X /> : <Menu />}
+          {menuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
-      </div>
-      <aside
-        id="platform-sidebar"
-        className={`demo-sidebar ${menuOpen ? "is-open" : ""}`}
-        aria-label="التنقل في منصة مسار"
-      >
-        <Link className="brand" to="/" aria-label="مسار MASAR — الرئيسية">
-          <span className="platform-brand-symbol">
-            <GatewayMark />
-          </span>
-          <span className="brand-copy">
-            <span className="brand-name">
-              مسار <bdi className="brand-latin">MASAR</bdi>
-            </span>
-            <small>معرفة ترشدك.</small>
-          </span>
-        </Link>
-        <div className="platform-workspace-label">
-          <span className="platform-company-symbol">
-            <Building2 size={18} />
-          </span>
-          <div>
-            مساحة الموظف<small>شركة مسار</small>
-          </div>
-        </div>
-        <span className="platform-nav-caption">مساحة المعرفة</span>
-        <nav aria-label="التنقل الرئيسي">
-          {demoNavigation.map((n, i) => {
-            const Icon = icons[i];
+        <nav
+          id="platform-sidebar"
+          className={`masar-nav-links ${menuOpen ? "is-open" : ""}`}
+          aria-label="التنقل الرئيسي"
+        >
+          {[0, 1, 4, 2, 5].map((index) => {
+            const item = demoNavigation[index];
+            const Icon = icons[index];
+            const label =
+              index === 4
+                ? "قاعدة المعرفة"
+                : index === 2
+                  ? "المهام"
+                  : item.label;
             return (
-              <NavLink key={n.path} to={n.path} end={n.path === "/"}>
-                <Icon size={19} />
-                <span>
-                  {n.label}
-                  <small dir="ltr">{n.term}</small>
-                </span>
-                <ChevronLeft size={14} className="platform-nav-chevron" />
+              <NavLink key={item.path} to={item.path} end={item.path === "/"}>
+                <Icon size={17} />
+                <span>{label}</span>
+                <i aria-hidden="true" />
               </NavLink>
             );
           })}
+          <Link className="masar-mobile-procedures" to="/policies">
+            السياسات والإجراءات <ArrowUpLeft size={15} />
+          </Link>
         </nav>
-        <div className="platform-sidebar-bottom">
-          <BookOpen size={23} />
-          <h2>كل معرفة، لها مصدر.</h2>
-          <p>دليل واضح لأقسامك وإجراءاتك، ومساعد يرافق خطواتك.</p>
-          <Link to="/documents">
-            استكشف المستندات
-            <ArrowUpLeft size={15} />
-          </Link>
-        </div>
-        <div className="platform-sidebar-footer">
-          <span>MASAR</span>
-          <span>مساحة الموظف الجديد</span>
-        </div>
-      </aside>
+        <NavLink className="masar-nav-utility" to="/policies">
+          <BookOpen size={16} />
+          <span>الإجراءات</span>
+          <ArrowUpLeft size={14} />
+        </NavLink>
+      </header>
       <div className="platform-body">
-        <header className="platform-topbar">
-          <div className="platform-breadcrumb">
-            <Link to="/">مساحة العمل</Link>
-            <ChevronLeft size={13} />
-            <span>{currentPage?.label || "الصفحة"}</span>
-          </div>
-          <Link className="platform-topbar-action" to="/assistant">
-            <Sparkles size={15} />
-            اسأل مسار
-            <ArrowUpLeft size={14} />
-          </Link>
-        </header>
         <main
           ref={main}
           id="main-content"
@@ -286,7 +250,7 @@ export default function Demo() {
         >
           <PageHeader
             title={currentPage?.label || "الصفحة غير موجودة"}
-            eyebrow={currentPage?.term || "MASAR"}
+            eyebrow={assistantPage ? "معرفة تبدأ بسؤال" : "مساحة عملك، بوضوح"}
             headingRef={heading}
             index={
               currentPage
@@ -372,7 +336,7 @@ export default function Demo() {
                       {[
                         "كيف أبدأ أول يوم؟",
                         "كيف أطلب إجازة؟",
-                        "How do I connect to VPN?",
+                        "كيف أتصل بالشبكة الخاصة (VPN)؟",
                       ].map((q) => (
                         <button
                           key={q}
@@ -411,20 +375,17 @@ export default function Demo() {
                             {s.section ? ` — ${s.section}` : ""}
                           </summary>
                           <blockquote>{s.quote}</blockquote>
-                          {s.url &&
-                            /^\/api\/demo\/documents\/[a-z0-9-]+$/.test(
-                              s.url,
-                            ) && (
-                              <a
-                                className="platform-source"
-                                href={s.url}
-                                target="_blank"
-                                rel="noreferrer"
-                              >
-                                افتح المستند الأصلي
-                                <ArrowUpLeft size={14} />
-                              </a>
-                            )}
+                          {demoSourceHref(s.url) && (
+                            <a
+                              className="platform-source"
+                              href={demoSourceHref(s.url)}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              افتح المستند الأصلي
+                              <ArrowUpLeft size={14} />
+                            </a>
+                          )}
                           {s.documentId && (
                             <Link
                               className="platform-source"
@@ -465,7 +426,12 @@ export default function Demo() {
                       <i />
                       <i />
                     </span>
-                    مسار يكتب…
+                    <span>
+                      مسار يعالج سؤالك…
+                      <small className="ai-loading-caption">
+                        ستظهر الإجابة هنا عند اكتمال المعالجة
+                      </small>
+                    </span>
                   </p>
                 )}
                 {chatError?.id === selected && (
