@@ -180,7 +180,9 @@ def main():
             ]
             for confirmation in ("نعم", "إيه", "أكيد"):
                 ask(confirmation, history, "leave-policy")
-        assert ask("ما رقم الرحلة القادمة إلى المريخ؟", []).status == "not_found"
+        general = ask("ما رقم الرحلة القادمة إلى المريخ؟", [])
+        assert general.status == "general" and not general.sources
+        assert general.generated_by == "Cloudflare Workers AI / Llama"
         for greeting in ("هاي", "هلا", "أهلًا", "مرحبا", "السلام عليكم", "كيفك", "كيفك؟"):
             assert ask(greeting, []).status == "conversational"
     except AIUnavailable as error:

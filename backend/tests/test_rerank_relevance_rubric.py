@@ -1,6 +1,7 @@
 """Local prompt/pipeline regressions; not proof of live Llama relevance quality."""
 
 import json
+from test_semantic_search import compact_fixture
 
 import pytest
 
@@ -41,20 +42,24 @@ class RubricFixture(SearchFixture):
         self.partial_reference = partial["id"]
         assert metadata["search_query"] == "working hours"
         return json.dumps(
-            {
-                "results": [
-                    {
-                        "id": candidate["id"],
-                        "original": original_assessment(
-                            candidate["id"],
-                            self.relevant if candidate["id"] == self.partial_reference else False,
-                            self.score if candidate["id"] == self.partial_reference else 0.0,
-                        ),
-                        "rewritten": {"relevant": False, "score": 0.0},
-                    }
-                    for candidate in self.candidates
-                ]
-            }
+            compact_fixture(
+                {
+                    "results": [
+                        {
+                            "id": candidate["id"],
+                            "original": original_assessment(
+                                candidate["id"],
+                                self.relevant
+                                if candidate["id"] == self.partial_reference
+                                else False,
+                                self.score if candidate["id"] == self.partial_reference else 0.0,
+                            ),
+                            "rewritten": {"relevant": False, "score": 0.0},
+                        }
+                        for candidate in self.candidates
+                    ]
+                }
+            )
         )
 
 

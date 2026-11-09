@@ -128,3 +128,31 @@ test("greeting, backend policy source and affirmative share the same API convers
   ).toHaveAttribute("href", "/api/demo/documents/leave-policy");
   expect(step).toBe(3);
 });
+
+test("general Llama knowledge stays visibly distinct from company evidence (offline transport)", async ({
+  page,
+}) => {
+  await page.route("**/api/demo/ask", (route) =>
+    route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({
+        status: "general",
+        answer:
+          "إجابة عامة من معرفة Llama، وليست مستندة إلى مستندات الشركة ولا تمثل سياسة رسمية لها.\nيمكن تقسيم المهام حسب الأولوية.",
+        sources: [],
+        generated_by: "Cloudflare Workers AI / Llama",
+        model: "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+      }),
+    }),
+  );
+  await page.goto("/assistant");
+  await page.getByLabel("رسالتك للمساعد").fill("كيف أنظم وقتي؟");
+  await page.getByRole("button", { name: /إرسال/ }).click();
+  const reply = page.locator(".demo-message.assistant");
+  await expect(reply.locator(".demo-status.general")).toHaveText(
+    "معرفة عامة — ليست من مستندات الشركة",
+  );
+  await expect(reply).toContainText("لا تمثل سياسة رسمية");
+  await expect(reply.locator("details")).toHaveCount(0);
+  await expect(page.locator(".demo-status.verified")).toHaveCount(0);
+});

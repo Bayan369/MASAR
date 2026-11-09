@@ -65,7 +65,8 @@ export type Topic = (typeof knowledge)[number]["id"];
 export type Context = { topic?: Topic; step: number };
 export type Reply = {
   text: string;
-  status: "verified" | "uncertain" | "unavailable" | "conversational";
+  status:
+    "verified" | "uncertain" | "unavailable" | "conversational" | "general";
   sources: {
     title: string;
     quote: string;
@@ -79,6 +80,7 @@ export type Reply = {
   context: Context;
 };
 export const statusLabels = {
+  general: "معرفة عامة — ليست من مستندات الشركة",
   conversational: "معك مسار",
   verified: "إجابة موثقة",
   uncertain: "إجابة غير مؤكدة — يلزم توضيح",

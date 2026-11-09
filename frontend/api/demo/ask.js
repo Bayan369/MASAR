@@ -67,7 +67,7 @@ export default async function handler(request, response) {
               }
             : {}),
         }),
-        signal: globalThis.AbortSignal.timeout(40000),
+        signal: globalThis.AbortSignal.timeout(110000),
         redirect: "error",
       },
     );
@@ -89,6 +89,7 @@ export default async function handler(request, response) {
         AI_SEARCH_INVALID:
           "تعذّر التحقق من نتائج البحث؛ لم تُستخدم مصادر غير موثوقة.",
         AI_EMBEDDING_INVALID: "تعذّر التحقق من متجهات البحث.",
+        AI_GENERAL_INVALID: "تعذّرت معالجة إجابة المساعد. حاول لاحقًا.",
         AI_ANSWER_INVALID:
           "تعذّر التحقق من الإجابة وأدلتها؛ لم تُعرض إجابة بديلة.",
         AI_PROVIDER_RESPONSE_INVALID:

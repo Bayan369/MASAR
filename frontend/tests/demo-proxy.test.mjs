@@ -224,3 +224,22 @@ test("proxy distinguishes incomplete assessments without exposing upstream data"
   assert.ok(!JSON.stringify(res.body).includes("PRIVATE_"));
   assert.equal(res.body.answer, undefined);
 });
+
+test("proxy preserves explicitly labeled general knowledge without company sources", async () => {
+  process.env.MASAR_DEMO_BACKEND_URL = "https://backend.example";
+  globalThis.fetch = async () =>
+    new globalThis.Response(
+      JSON.stringify({
+        status: "general",
+        answer: "إجابة عامة وليست سياسة الشركة.",
+        sources: [],
+        generated_by: "Cloudflare Workers AI / Llama",
+        model: "llama",
+      }),
+    );
+  const res = response();
+  await handler({ method: "POST", body: { question: "كيف أنظم وقتي؟" } }, res);
+  assert.equal(res.code, 200);
+  assert.equal(res.body.status, "general");
+  assert.deepEqual(res.body.sources, []);
+});

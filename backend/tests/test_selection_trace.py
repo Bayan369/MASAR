@@ -1,6 +1,7 @@
 """Observed-signature counterexample, NOT a replay or proof of the user's model output."""
 
 import json
+from test_semantic_search import compact_fixture
 import sys
 
 from app.config import Settings
@@ -26,22 +27,24 @@ class FinalChoiceFixture(SearchFixture):
         if prompt.startswith("Rerank"):
             metadata = json.loads(prompt.split("CANDIDATES JSON:\n", 1)[1])
             return json.dumps(
-                {
-                    "results": [
-                        {
-                            "id": p["id"],
-                            "original": original_assessment(
-                                p["id"],
-                                "Onboarding" in p["section"] or "Working hours" in p["section"],
-                                0.95
-                                if "Onboarding" in p["section"]
-                                else (0.9 if "Working hours" in p["section"] else 0.1),
-                            ),
-                            "rewritten": {"relevant": False, "score": 0.0},
-                        }
-                        for p in metadata["passages"]
-                    ]
-                }
+                compact_fixture(
+                    {
+                        "results": [
+                            {
+                                "id": p["id"],
+                                "original": original_assessment(
+                                    p["id"],
+                                    "Onboarding" in p["section"] or "Working hours" in p["section"],
+                                    0.95
+                                    if "Onboarding" in p["section"]
+                                    else (0.9 if "Working hours" in p["section"] else 0.1),
+                                ),
+                                "rewritten": {"relevant": False, "score": 0.0},
+                            }
+                            for p in metadata["passages"]
+                        ]
+                    }
+                )
             )
         context = json.loads(prompt.split("DOCUMENT CONTEXT:\n", 1)[1])
         # Deliberately choose an adjacent but different section only in the English fixture.

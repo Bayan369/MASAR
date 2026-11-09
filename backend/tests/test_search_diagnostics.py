@@ -109,3 +109,36 @@ def test_valid_result_is_unchanged_and_does_not_log_errors(caplog):
     )
     assert provider.calls == 1
     assert not caplog.records
+
+
+@pytest.mark.parametrize("at_end", [True, False])
+def test_column_1505_does_not_by_itself_prove_output_truncation(at_end, caplog):
+    from app.services.semantic_search import CompactRanking
+
+    prefix = '{"results":'
+    raw = prefix + " " * (1504 - len(prefix))
+    if not at_end:
+        raw += "PRIVATE_INVALID_TOKEN}"
+    # Keep internal whitespace; trailing-only spaces are stripped before parsing.
+    if at_end:
+        prefix = '{"results":['
+        raw = prefix + "0," * ((1504 - len(prefix)) // 2)
+        # Exercise parser directly so position/length correspond to the exact input.
+        from app.services.semantic_search import log_structured_validation
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError) as error:
+            CompactRanking.model_validate_json(raw)
+        log_structured_validation(error.value, raw, "rerank")
+    else:
+        rejected(raw, caplog, CompactRanking)
+    assert "line=1 column=1505" in caplog.text
+    assert f"chars={len(raw)} at_end={str(at_end).lower()} syntax=expected_value" in caplog.text
+    assert "truncation=confirmed" not in caplog.text and "PRIVATE_" not in caplog.text
+
+
+def test_json_diagnostic_uses_allowlisted_syntax_not_raw_parser_message(caplog):
+    raw = '{"results":"PRIVATE_TEXT\\q"}'
+    log = rejected(raw, caplog)
+    assert "syntax=invalid_escape" in log
+    assert "PRIVATE_TEXT" not in log

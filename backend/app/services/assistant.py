@@ -37,7 +37,7 @@ class Source(BaseModel):
 
 
 class Answer(BaseModel):
-    status: Literal["answered", "not_found", "conversational"]
+    status: Literal["answered", "not_found", "conversational", "general"]
     answer: str
     sources: list[Source] = Field(default_factory=list)
     conversation_id: str | None = None

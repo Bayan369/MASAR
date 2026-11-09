@@ -33,6 +33,37 @@ def intent_result(query, question):
     return {"query": query, "intent": {"request": question, "scope": "broad", "conditions": []}}
 
 
+def compact_fixture(payload):
+    if (
+        "results" not in payload
+        or not payload["results"]
+        or isinstance(payload["results"][0], list)
+    ):
+        return payload
+    codes = {
+        "direct_support": "d",
+        "partial_support": "p",
+        "conditional_support": "c",
+        "background_only": "b",
+        "no_support": "n",
+    }
+    return {
+        "results": [
+            [
+                row["id"],
+                row["original"]["relevant"],
+                row["original"]["score"],
+                codes[row["original"]["relation"]],
+                [int(ref.rsplit("E", 1)[1]) for ref in row["original"]["evidence_ids"]],
+                [int(ref[1:]) for ref in row["original"]["condition_ids"]],
+                row["rewritten"]["relevant"],
+                row["rewritten"]["score"],
+            ]
+            for row in payload["results"]
+        ]
+    }
+
+
 class SearchFixture:
     def __init__(self):
         self.batches = []
@@ -54,20 +85,22 @@ class SearchFixture:
         assert prompt.startswith("Rerank")
         data = json.loads(prompt.split("CANDIDATES JSON:\n", 1)[1])
         return json.dumps(
-            {
-                "results": [
-                    {
-                        "id": "invented" if self.bad_ids else p["id"],
-                        "original": original_assessment(
-                            p["id"],
-                            not self.reject and "Onboarding" in p["section"],
-                            0.95 if "Onboarding" in p["section"] else 0.1,
-                        ),
-                        "rewritten": {"relevant": False, "score": 0.0},
-                    }
-                    for p in data["passages"]
-                ]
-            }
+            compact_fixture(
+                {
+                    "results": [
+                        {
+                            "id": "invented" if self.bad_ids else p["id"],
+                            "original": original_assessment(
+                                p["id"],
+                                not self.reject and "Onboarding" in p["section"],
+                                0.95 if "Onboarding" in p["section"] else 0.1,
+                            ),
+                            "rewritten": {"relevant": False, "score": 0.0},
+                        }
+                        for p in data["passages"]
+                    ]
+                }
+            )
         )
 
 

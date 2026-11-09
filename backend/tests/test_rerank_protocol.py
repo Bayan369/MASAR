@@ -1,6 +1,7 @@
 """Offline protocol fixtures only; these tests do not establish live model quality."""
 
 import json
+from test_semantic_search import compact_fixture
 
 import pytest
 from fastapi.testclient import TestClient
@@ -86,12 +87,14 @@ class PartialSupportFixture(SearchFixture):
         bounds = data["response_schema"]["properties"]["results"]
         assert bounds["minItems"] == bounds["maxItems"] == len(candidates)
         return json.dumps(
-            {
-                "results": [
-                    assessment(p["id"], index == 0, self.score if index == 0 else 0.1)
-                    for index, p in enumerate(candidates)
-                ]
-            }
+            compact_fixture(
+                {
+                    "results": [
+                        assessment(p["id"], index == 0, self.score if index == 0 else 0.1)
+                        for index, p in enumerate(candidates)
+                    ]
+                }
+            )
         )
 
 
@@ -114,9 +117,14 @@ def test_partial_relevant_evidence_obeys_unchanged_threshold_and_original_mappin
     assert len(provider.prompts) == 2  # No extra inference or repair attempt.
 
 
-def test_incomplete_api_response_is_error_never_not_found_or_fallback():
+def test_incomplete_rerank_never_uses_unchecked_sources_but_allows_labeled_general():
     class Missing(SearchFixture):
+        settings = Settings(_env_file=None)
+
         def generate(self, prompt, question):
+            if "This is GENERAL knowledge" in prompt:
+                self.prompts.append(prompt)
+                return json.dumps({"answer": "توجيه عام للاختبار وليس سياسة شركة."})
             result = json.loads(super().generate(prompt, question))
             if prompt.startswith("Rerank"):
                 result["results"] = result["results"][:-1]
@@ -127,10 +135,11 @@ def test_incomplete_api_response_is_error_never_not_found_or_fallback():
     app.state.ai_provider = provider
     with TestClient(app) as client:
         response = client.post("/api/v1/demo/ask", json={"question": "طلب إجراء عام"})
-    assert response.status_code == 502
-    assert response.json()["error"]["code"] == "AI_SEARCH_INCOMPLETE"
-    assert "answer" not in response.json()
-    assert len(provider.prompts) == 2
+    assert response.status_code == 200
+    assert response.json()["status"] == "general"
+    assert response.json()["sources"] == []
+    assert "ليست مستندة إلى مستندات الشركة" in response.json()["answer"]
+    assert len(provider.prompts) == 3
 
 
 @pytest.mark.parametrize("view", ["original", "rewritten"])
@@ -181,21 +190,23 @@ class DualViewFixture(SearchFixture):
         assert "including short confirmations and ellipsis" in prompt
         self.references = [p["id"] for p in metadata["passages"]]
         return json.dumps(
-            {
-                "results": [
-                    {
-                        "id": ref,
-                        "original": original_assessment(ref, values[0], values[1]),
-                        "rewritten": {"relevant": values[2], "score": values[3]},
-                    }
-                    for index, ref in enumerate(self.references)
-                    for values in [
-                        self.assessments[index]
-                        if index < len(self.assessments)
-                        else (False, 0.0, False, 0.0)
+            compact_fixture(
+                {
+                    "results": [
+                        {
+                            "id": ref,
+                            "original": original_assessment(ref, values[0], values[1]),
+                            "rewritten": {"relevant": values[2], "score": values[3]},
+                        }
+                        for index, ref in enumerate(self.references)
+                        for values in [
+                            self.assessments[index]
+                            if index < len(self.assessments)
+                            else (False, 0.0, False, 0.0)
+                        ]
                     ]
-                ]
-            }
+                }
+            )
         )
 
 
@@ -220,7 +231,11 @@ def test_only_original_view_controls_eligibility(original, rewritten, selected):
         assert hits[0].score == original[1]
     event = next(e for e in events if e["stage"] == "rerank")
     assert event["results"][0]["original"] == original_assessment("C1", *original)
-    assert event["results"][0]["rewritten"] == {"relevant": rewritten[0], "score": rewritten[1]}
+    rewritten_relevant, rewritten_score = rewritten
+    assert event["results"][0]["rewritten"] == {
+        "relevant": rewritten_relevant,
+        "score": rewritten_score,
+    }
     assert event["omitted"] == []
     assert len(provider.prompts) == 2
 

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_prefix="MASAR_",
         env_file=Path(__file__).resolve().parents[1] / ".env",
+        env_file_encoding="utf-8-sig",
         extra="ignore",
         hide_input_in_errors=True,
     )

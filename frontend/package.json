@@ -15,7 +15,7 @@
     "test:demo": "playwright test --config playwright.demo.config.ts",
     "test:vercel": "playwright test --config playwright.vercel.config.ts",
     "test:public-demo": "playwright test --config playwright.public-demo.config.ts",
-    "test:proxy": "node --test tests/demo-proxy.test.mjs",
+    "test:proxy": "node --test tests/demo-proxy.test.mjs tests/environment.test.mjs",
     "test:local-api": "playwright test --config playwright.local-api.config.ts"
   },
   "dependencies": {

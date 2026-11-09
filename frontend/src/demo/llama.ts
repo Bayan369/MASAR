@@ -25,7 +25,7 @@ export async function askLlama(
             }
           : {}),
       }),
-      signal: AbortSignal.timeout(45000),
+      signal: AbortSignal.timeout(120000),
     });
   } catch {
     throw new Error(
@@ -38,10 +38,23 @@ export async function askLlama(
   } catch {
     throw new Error("استجابة غير صالحة من خدمة Llama.");
   }
-  if (!response.ok)
-    throw new Error(data?.error?.message || "تعذّر الحصول على إجابة من Llama.");
+  if (!response.ok) {
+    const code = data?.error?.code;
+    const message =
+      response.status === 429
+        ? "خدمة المساعد مشغولة أو وصلت إلى حد الطلبات. انتظر قليلًا ثم حاول مجددًا."
+        : code === "AI_SEARCH_INVALID" ||
+            code === "AI_SEARCH_INCOMPLETE" ||
+            code === "AI_ANSWER_INVALID" ||
+            code === "AI_GENERAL_INVALID"
+          ? "تعذّر التحقق من إجابة المساعد ومصادرها. حاول لاحقًا؛ لم تُعرض إجابة غير موثقة."
+          : "تعذّر الحصول على إجابة من Llama الآن. حاول لاحقًا؛ لم تُستخدم إجابة بديلة.";
+    throw new Error(message);
+  }
   if (
-    !["answered", "not_found", "conversational"].includes(data.status) ||
+    !["answered", "not_found", "conversational", "general"].includes(
+      data.status,
+    ) ||
     typeof data.answer !== "string" ||
     !Array.isArray(data.sources) ||
     data.sources.some(
@@ -50,6 +63,10 @@ export async function askLlama(
         typeof source.title !== "string" ||
         typeof source.quote !== "string",
     ) ||
+    (data.status === "general" &&
+      (data.sources.length !== 0 ||
+        data.generated_by !== "Cloudflare Workers AI / Llama" ||
+        !data.model)) ||
     (data.status === "answered" &&
       (!data.sources.length ||
         data.generated_by !== "Cloudflare Workers AI / Llama" ||
@@ -61,9 +78,11 @@ export async function askLlama(
     status:
       data.status === "answered"
         ? "verified"
-        : data.status === "conversational"
-          ? "conversational"
-          : "unavailable",
+        : data.status === "general"
+          ? "general"
+          : data.status === "conversational"
+            ? "conversational"
+            : "unavailable",
     sources: data.sources.map((source: Reply["sources"][number]) => ({
       ...source,
     })),

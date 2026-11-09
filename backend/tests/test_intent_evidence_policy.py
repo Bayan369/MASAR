@@ -5,6 +5,7 @@ not language understanding. Runtime has no question/document-specific decisions.
 """
 
 import json
+from test_semantic_search import compact_fixture
 from dataclasses import replace
 
 import pytest
@@ -102,7 +103,7 @@ class PolicyFixture:
                 results.append(
                     {"id": p["id"], "original": view, "rewritten": {"relevant": True, "score": 1.0}}
                 )
-            return json.dumps({"results": results})
+            return json.dumps(compact_fixture({"results": results}))
         self.answer_input = json.loads(prompt.split("DOCUMENT CONTEXT:\n", 1)[1])
         assert "state that limitation" in prompt
         assert "not universal obligations" in prompt
@@ -259,7 +260,6 @@ def test_invented_or_assistant_only_condition_proof_fails_closed(status, evidenc
         ([], [], "partial_support"),
         (["C1:E1"], ["K99"], "conditional_support"),
         (["C1:E1"], ["K1", "K1"], "conditional_support"),
-        (["C1:E1"], ["K1"], "direct_support"),
     ],
 )
 def test_sentence_and_condition_references_are_source_bound(evidence_ids, condition_ids, relation):
@@ -369,3 +369,139 @@ def test_provider_generation_limits_and_model_are_unchanged(monkeypatch):
     assert payload["temperature"] == 0.1
     assert payload["response_format"] == {"type": "json_object"}
     assert model == "@cf/meta/llama-3.1-8b-instruct-fp8-fast"
+
+
+def test_excess_prerequisites_are_not_truncated_or_accepted(corpus):
+    conditions = [prerequisite() for _ in range(4)]
+    provider = PolicyFixture(
+        {"Network": ("conditional_support", ["K1", "K2", "K3", "K4"], True, 0.95)}, conditions
+    )
+    events = []
+    hits = HybridSearch().search(
+        "أحتاج الاتصال عن بعد", [], provider, Settings(_env_file=None), events.append
+    )
+    # Reject the entire invalid assessment, never truncate/approve its conditions.
+    assert hits and all(hit.support_relation is None for hit in hits)
+    assert all(hit.support_ranges is None for hit in hits)
+    assert any(event["stage"] == "rerank_fallback" for event in events)
+    assert not any(event["stage"] == "rerank" for event in events)
+    assert len(provider.rerank_input["intent"]["conditions"]) == 4
+    assert len(provider.prompts) == 2
+    assert provider.answer_input is None
+
+
+def test_unrepresentable_prerequisites_reject_candidate_without_losing_intent(corpus):
+    conditions = [prerequisite() for _ in range(4)]
+    provider = PolicyFixture({"Network": ("conditional_support", [], False, 0)}, conditions)
+    hits = HybridSearch().search("أحتاج الاتصال عن بعد", [], provider, Settings(_env_file=None))
+    assert hits == []
+    assert len(provider.rerank_input["intent"]["conditions"]) == 4
+    assert provider.conditions == conditions
+    assert len(provider.prompts) == 2
+    assert answer_question("سؤال", provider, hits).status == "not_found"
+    assert len(provider.prompts) == 2
+    rerank_prompt = provider.prompts[-1][0]
+    assert "EXACTLY this eight-element array" in rerank_prompt
+    assert "at most 2 integers" in rerank_prompt and "at most 3 integers" in rerank_prompt
+    assert "Never remove a required prerequisite" in rerank_prompt
+    assert "NOT a nested array" in rerank_prompt
+    schema = provider.rerank_input["response_schema"]["properties"]["results"]["items"]
+    assert schema["minItems"] == schema["maxItems"] == 8
+    assert schema["prefixItems"][6]["type"] == "boolean"
+    assert schema["prefixItems"][7]["type"] == "number"
+
+
+@pytest.mark.parametrize("relation", ["direct_support", "partial_support"])
+@pytest.mark.parametrize(
+    "status,selected", [("confirmed", True), ("unknown", False), ("denied", False)]
+)
+def test_applicability_is_validated_independently_of_direct_or_partial_relation(
+    corpus, relation, status, selected
+):
+    condition = {
+        "condition": "وضع المستخدم المذكور",
+        "status": status,
+        "evidence_id": None if status == "unknown" else "U0:E1",
+    }
+    provider = PolicyFixture({"Equipment": (relation, ["K1"], True, 0.8)}, [condition])
+    hits = HybridSearch().search(
+        "كيف أطلب الجهاز بعد بدء العمل؟", [], provider, Settings(_env_file=None)
+    )
+    assert bool(hits) is selected
+    if selected:
+        assert hits[0].passage == corpus[0] and hits[0].support_relation == relation
+    else:
+        assert answer_question("سؤال", provider, hits).status == "not_found"
+        assert provider.answer_input is None
+    assert len(provider.prompts) == 2
+
+
+@pytest.mark.parametrize("relation", ["direct_support", "partial_support"])
+def test_mixed_confirmed_and_unknown_circumstances_do_not_qualify_direct_evidence(corpus, relation):
+    conditions = [prerequisite(), prerequisite("unknown", None)]
+    provider = PolicyFixture({"Equipment": (relation, ["K1", "K2"], True, 0.9)}, conditions)
+    assert HybridSearch().search("سؤال إجرائي", [], provider, Settings(_env_file=None)) == []
+
+
+def test_packaged_handbook_device_request_after_start_keeps_exact_evidence_and_sources(monkeypatch):
+    # Scripted model output tests the real corpus/validation pipeline, NOT a live Llama answer.
+    from app.services.retrieval import passages
+
+    source = next(p for p in passages() if p.id == "employee-handbook:1")
+    monkeypatch.setattr("app.services.semantic_search.passages", lambda: (source,))
+    question = "كيف أطلب جهاز العمل بعد المباشرة؟"
+    condition = {
+        "condition": "بدء العمل كما ذكر المستخدم",
+        "status": "confirmed",
+        "evidence_id": "U0:E1",
+    }
+
+    class EquipmentEvidence(PolicyFixture):
+        def generate(self, prompt, current_question):
+            if prompt.startswith(("Rewrite", "Rerank")):
+                result = json.loads(super().generate(prompt, current_question))
+                if prompt.startswith("Rewrite"):
+                    result["intent"]["scope"] = "specific"
+                else:
+                    result["results"][0][4] = [1, 2]
+                return json.dumps(result, ensure_ascii=False)
+            self.prompts.append((prompt, current_question))
+            self.answer_input = json.loads(prompt.split("DOCUMENT CONTEXT:\n", 1)[1])
+            evidence = self.answer_input[0]["evidence"]
+            assert [span["evidence_id"] for span in evidence] == ["S1:E1", "S1:E2"]
+            return json.dumps(
+                {
+                    "supported": True,
+                    "answer": " ".join(span["text"] for span in evidence),
+                    "citations": [
+                        {"source_id": "S1", "evidence_ids": [s["evidence_id"] for s in evidence]}
+                    ],
+                },
+                ensure_ascii=False,
+            )
+
+    provider = EquipmentEvidence({source.title: ("direct_support", ["K1"], True, 0.9)}, [condition])
+    events = []
+    settings = Settings(_env_file=None)
+    hits = HybridSearch().search(question, [], provider, settings, trace=events.append)
+    assert len(hits) == 1 and hits[0].passage == source
+    assert hits[0].support_relation == "direct_support"
+    result = answer_question(question, provider, hits)
+    assert result.status == "answered"
+    cited = result.sources[0]
+    assert cited.document_id == source.document_id and cited.title == source.title
+    assert cited.section == source.section and "Onboarding" in cited.section
+    assert cited.quote in source.text and result.answer == cited.quote
+    for supported_detail in [
+        "طلب جهاز العمل",
+        "المدير المباشر",
+        "المسمى الوظيفي",
+        "القسم",
+        "تاريخ بدء العمل",
+    ]:
+        assert supported_detail in cited.quote
+    row = next(event for event in events if event["stage"] == "rerank")["results"][0]
+    assert row["original"]["condition_ids"] == ["K1"]
+    assert row["original"]["evidence_ids"] == ["C1:E1", "C1:E2"]
+    assert row["eligible"] is True
+    assert len(provider.prompts) == 3 and settings.ai_call_budget == 20

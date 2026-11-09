@@ -25,7 +25,10 @@ def test_reranker_complete_assessments_map_to_original_evidence():
     metadata = json.loads(provider.prompts[-1].split("CANDIDATES JSON:\n", 1)[1])
     ids = [item["id"] for item in metadata["passages"]]
     assert all(value.startswith("C") for value in ids)
-    assert metadata["response_schema"]["$defs"]["Relevance"]["properties"]["id"]["enum"] == ids
+    assert (
+        metadata["response_schema"]["properties"]["results"]["items"]["prefixItems"][0]["enum"]
+        == ids
+    )
 
 
 @pytest.mark.parametrize("ids", [["PRIVATE_UNKNOWN"], ["C1", "C1"], ["C1", "S1"]])

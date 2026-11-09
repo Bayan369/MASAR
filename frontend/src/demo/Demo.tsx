@@ -408,6 +408,7 @@ export default function Demo() {
                           <summary>
                             <BookOpen size={14} />
                             المصدر: {s.title}
+                            {s.section ? ` — ${s.section}` : ""}
                           </summary>
                           <blockquote>{s.quote}</blockquote>
                           {s.url &&

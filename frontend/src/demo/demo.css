@@ -2580,3 +2580,10 @@ html[data-reduce-motion="true"] .demo-shell :is(a, button, summary),
     padding: 9px var(--space-3);
   }
 }
+
+/* General knowledge is explicitly distinct from verified company evidence. */
+.demo-status.general {
+  color: var(--brand);
+  border: 1px solid currentColor;
+  font-weight: 600;
+}

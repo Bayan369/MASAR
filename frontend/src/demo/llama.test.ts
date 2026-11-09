@@ -37,7 +37,7 @@ describe("Llama API adapter (mocked transport, not live inference)", () => {
         ),
     );
     await expect(askLlama("كيف أطلب إجازة؟", context)).rejects.toThrow(
-      "Llama غير متاح",
+      "لم تُستخدم إجابة بديلة",
     );
   });
   it("rejects answered responses missing model provenance", async () => {
@@ -143,4 +143,82 @@ it("rejects an answered response with model metadata but no evidence", async () 
     ),
   );
   await expect(askLlama("سؤال", context)).rejects.toThrow("مصدر");
+});
+
+it.each(["AI_SEARCH_INVALID", "AI_SEARCH_INCOMPLETE", "AI_ANSWER_INVALID"])(
+  "shows a safe Arabic error for %s without forwarding technical details",
+  async (code) => {
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: {
+            code,
+            message: "PRIVATE_RAW_ERROR rag_schema_error results.0",
+          },
+        }),
+        { status: 502 },
+      ),
+    );
+    vi.stubGlobal("fetch", fetcher);
+    await expect(askLlama("سؤال", context)).rejects.toThrow(
+      "لم تُعرض إجابة غير موثقة",
+    );
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  },
+);
+
+it("marks model-generated general knowledge separately from company answers", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          status: "general",
+          answer: "إجابة عامة وليست سياسة رسمية للشركة.",
+          sources: [],
+          generated_by: "Cloudflare Workers AI / Llama",
+          model: "@cf/meta/llama-3.1-8b-instruct-fp8-fast",
+        }),
+      ),
+    ),
+  );
+  const result = await askLlama("كيف أنظم وقتي؟", context);
+  expect(result.status).toBe("general");
+  expect(result.sources).toEqual([]);
+  expect(result.text).toContain("ليست سياسة رسمية");
+});
+
+it.each([
+  {
+    sources: [{ title: "مصدر غير مسموح", quote: "نص" }],
+    generated_by: "Cloudflare Workers AI / Llama",
+    model: "llama",
+  },
+  { sources: [], generated_by: null, model: null },
+])(
+  "rejects general knowledge with fabricated attribution or missing model provenance",
+  async (fields) => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            status: "general",
+            answer: "نص اختبار",
+            ...fields,
+          }),
+        ),
+      ),
+    );
+    await expect(askLlama("سؤال", context)).rejects.toThrow("مصدر");
+  },
+);
+
+it("shows a safe Arabic error for a network timeout without creating a reply", async () => {
+  const fetcher = vi
+    .fn()
+    .mockRejectedValue(new DOMException("PRIVATE_TIMEOUT", "TimeoutError"));
+  vi.stubGlobal("fetch", fetcher);
+  await expect(askLlama("سؤال", context)).rejects.toThrow("تعذّر الاتصال");
+  expect(fetcher).toHaveBeenCalledTimes(1);
 });
