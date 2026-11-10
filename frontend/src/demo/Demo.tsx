@@ -79,6 +79,7 @@ export default function Demo() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
   const messageInput = useRef<HTMLTextAreaElement>(null);
+  const previousTyping = useRef(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const main = useRef<HTMLElement>(null);
@@ -94,6 +95,14 @@ export default function Demo() {
     },
     [],
   );
+  useEffect(() => {
+    const completed = previousTyping.current && !typing;
+    previousTyping.current = typing;
+    // Effects run after React has removed disabled from the existing textarea.
+    // Focus only on completion, never on draft edits or while another page is open.
+    if (completed && assistantPage)
+      messageInput.current?.focus({ preventScroll: true });
+  }, [typing, assistantPage]);
   useEffect(() => {
     const messages = bottom.current?.parentElement;
     if (messages)
@@ -181,7 +190,6 @@ export default function Demo() {
       });
     } finally {
       setTyping(false);
-      messageInput.current?.focus();
     }
   }
   return (
